@@ -620,7 +620,7 @@
         <div id="mobile-list" class="mobile-substate" style="display:flex;flex-direction:column;flex:1;">
           <div class="phone-top">
             <div class="phone-top-greet">좋은 아침입니다</div>
-            <div class="phone-top-name">김영훈 담당자님</div>
+            <div class="phone-top-name" id="mobile-field-topname">김영훈 담당자님</div>
           </div>
           <div class="phone-body" id="mobile-tab-projects">
             <div class="field-section-label">사전 프로젝트 · 2건</div>
@@ -710,8 +710,8 @@
 
           <div class="phone-body" id="mobile-tab-profile" style="display:none;">
             <div class="job-card" style="text-align:center;padding:20px 14px;">
-              <div style="font-size:13px;font-weight:700;margin-bottom:2px;">김영훈</div>
-              <div style="font-size:11px;color:var(--slate);margin-bottom:14px;">과장 · 설계, 시공, 실사</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:2px;" id="mobile-field-profile-name">김영훈</div>
+              <div style="font-size:11px;color:var(--slate);margin-bottom:14px;" id="mobile-field-profile-role">과장 · 설계, 시공, 실사</div>
               <button class="btn-mini" style="background:var(--danger);width:100%;" onclick="mobileGo('closing')">로그아웃</button>
             </div>
           </div>
@@ -1695,6 +1695,7 @@
     });
     if(target === 'bizdash') renderBizDashboard();
     if(target === 'customers') syncCustomerStatusCells();
+    if(target === 'mobile') syncFieldMobileUser();
     if(target === 'dashboard' && PRE_PROJECTS.length){ syncAllPreRows(); selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name); updatePreTotalCount(); }
     if(target === 'progress' && PROG_PROJECTS.length){ syncAllProgRows(); selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name); updateProgTotalCount(); }
   }
@@ -3416,7 +3417,18 @@
   }
 
   // ---- mobile sub-screens: login / list / closing ----
+  function syncFieldMobileUser(){
+    const name = CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.name : '김영훈';
+    const roleTxt = CURRENT_LOGIN_USER ? `${CURRENT_LOGIN_USER.position || ''}${CURRENT_LOGIN_USER.position ? ' · ' : ''}${CURRENT_LOGIN_USER.roles.join(', ')}` : '과장 · 설계, 시공, 실사';
+    const topName = document.getElementById('mobile-field-topname');
+    const profName = document.getElementById('mobile-field-profile-name');
+    const profRole = document.getElementById('mobile-field-profile-role');
+    if(topName) topName.textContent = name + ' 담당자님';
+    if(profName) profName.textContent = name;
+    if(profRole) profRole.textContent = roleTxt;
+  }
   function mobileGo(state){
+    if(state === 'list') syncFieldMobileUser();
     document.querySelectorAll('.mobile-substate').forEach(s=>s.style.display='none');
     const el = document.getElementById('mobile-'+state);
     if(el) el.style.display = 'flex';
