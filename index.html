@@ -1646,6 +1646,7 @@
       { key:'formsview', label:'양식 조회' },
     ]},
   ];
+  let CURRENT_LOGIN_USER = null; // {name, roles: [], position} — 데모: 로그인 사용자 전환용
   function renderSidebars(){
     document.querySelectorAll('.sidebar[data-active]').forEach(sb=>{
       const active = sb.dataset.active;
@@ -1657,7 +1658,11 @@
           html += `<div class="${cls}" data-key="${it.key}" onclick="go('${it.key}')">${it.label}</div>`;
         });
       });
-      html += `<div style="margin-top:18px;"><div class="side-user"><div class="side-user-avatar">대표</div><div><div class="side-user-name">김대호</div><div class="side-user-role">대표이사 · 대표</div></div></div></div>`;
+      const loginName = CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.name : '김대호';
+      const loginPos = CURRENT_LOGIN_USER ? (CURRENT_LOGIN_USER.position || '') : '대표이사';
+      const loginRoles = CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.roles.join(',') : '대표';
+      const avatarText = CURRENT_LOGIN_USER ? (CURRENT_LOGIN_USER.roles[0] || '직원').slice(0,2) : '대표';
+      html += `<div style="margin-top:18px;"><div class="side-user"><div class="side-user-avatar">${avatarText}</div><div><div class="side-user-name">${loginName}</div><div class="side-user-role">${loginPos}${loginPos?' · ':''}${loginRoles}</div></div></div></div>`;
       html += `<div style="padding:14px 20px 32px;"><button onclick="go('closing')" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.75);font-size:12px;cursor:pointer;">⏻ 시스템 종료</button></div>`;
       sb.innerHTML = html;
     });
@@ -2599,7 +2604,6 @@
     setTimeout(()=>selectProgressProject(id, name), 50);
   }
   // ---- 데모: 로그인 사용자 전환 (권한별 화면 분리 시연용) ----
-  let CURRENT_LOGIN_USER = null; // {name, roles: []}
   function populateLoginUserSelect(){
     const sel = document.getElementById('demo-login-user');
     if(!sel) return;
@@ -2620,9 +2624,13 @@
   function doLogin(){
     const sel = document.getElementById('demo-login-user');
     const name = sel ? sel.value : '';
-    const roleCell = Array.from(document.querySelectorAll('#grid-users tr')).find(tr=>tr.children[0] && tr.children[0].textContent.trim()===name);
-    const roles = roleCell ? (roleCell.querySelector('.role-cell').dataset.roles||'').split(',') : [];
-    CURRENT_LOGIN_USER = { name, roles };
+    const row = Array.from(document.querySelectorAll('#grid-users tr')).find(tr=>tr.children[0] && tr.children[0].textContent.trim()===name);
+    const roleCell = row ? row.querySelector('.role-cell') : null;
+    const roles = roleCell ? (roleCell.dataset.roles||'').split(',') : [];
+    const posSel = row ? row.children[1].querySelector('select') : null;
+    const position = posSel ? posSel.value : '';
+    CURRENT_LOGIN_USER = { name, roles, position };
+    renderSidebars();
     go('bizdash');
   }
   function isFullAccessUser(){
