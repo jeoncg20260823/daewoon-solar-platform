@@ -20,6 +20,8 @@
     --success:#2F9E58;
     --success-bg:#E7F5EC;
     --danger:#D64545;
+    --info-blue:#2563EB;
+    --info-blue-bg:#E8EEFC;
     --white:#FFFFFF;
     --radius:10px;
   }
@@ -387,10 +389,11 @@
       </div>
       <div class="grid-wrap" style="max-height:420px;overflow-y:auto;">
         <table class="editgrid" id="grid-pre-list">
-          <tr><th>사전프로젝트번호</th><th>고객회사명</th><th>영업프리랜서</th><th>영업담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>최초설치용량(kW)</th><th>계약설치용량(kW)</th><th>실사담당</th><th>현재공정</th><th>진행상태</th><th>특이사항</th><th>업데이트일시</th></tr>
-          <tr data-step="실사 요청">
+          <tr><th>사전프로젝트번호</th><th>고객사명</th><th>현재공정</th><th>진행상태</th><th>영업프리랜서</th><th>영업담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>최초설치용량(kW)</th><th>계약설치용량(kW)</th><th>실사담당</th><th>특이사항</th><th>업데이트일시</th></tr><tr data-step="실사 요청">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0201','원일공업')">PJ-2026-0201</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">원일공업</td>
+          <td class="readonly-cell pre-curstep-cell">실사 요청</td>
+          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">이만수</td>
           <td><select class="cell-select sales-rep-select" data-value="전창길" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option>A</option><option selected>A-</option><option>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -399,13 +402,13 @@
           <td contenteditable="true">80</td>
           <td contenteditable="true"></td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="김영훈"></select></td>
-          <td class="readonly-cell pre-curstep-cell">실사 요청</td>
-          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/21 09:00</td>
         </tr><tr data-step="계약 추진">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0202','여록테크(개인)')">PJ-2026-0202</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">여록테크(개인)</td>
+          <td class="readonly-cell pre-curstep-cell">계약 추진</td>
+          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">-</td>
           <td><select class="cell-select sales-rep-select" data-value="김대호" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option>A</option><option>A-</option><option selected>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -414,13 +417,13 @@
           <td contenteditable="true">60</td>
           <td contenteditable="true">60</td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="이상화"></select></td>
-          <td class="readonly-cell pre-curstep-cell">계약 추진</td>
-          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/20 14:20</td>
         </tr><tr data-step="사전검토 완료">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0203','대림항업(주)')">PJ-2026-0203</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">대림항업(주)</td>
+          <td class="readonly-cell pre-curstep-cell">사전검토 완료</td>
+          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">안용희</td>
           <td><select class="cell-select sales-rep-select" data-value="김상철" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option selected>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -429,13 +432,13 @@
           <td contenteditable="true">130</td>
           <td contenteditable="true"></td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="김상철"></select></td>
-          <td class="readonly-cell pre-curstep-cell">사전검토 완료</td>
-          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/19 11:10</td>
         </tr><tr data-step="고객 사전미팅">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0204','울산워터젯(개인)')">PJ-2026-0204</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">울산워터젯(개인)</td>
+          <td class="readonly-cell pre-curstep-cell">고객 사전미팅</td>
+          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">전남일</td>
           <td><select class="cell-select sales-rep-select" data-value="김대호" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option selected>B</option><option>B-</option><option>C이하</option></select></td>
@@ -444,13 +447,13 @@
           <td contenteditable="true">70</td>
           <td contenteditable="true"></td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="김영훈"></select></td>
-          <td class="readonly-cell pre-curstep-cell">고객 사전미팅</td>
-          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/21 16:00</td>
         </tr><tr data-step="실사 완료">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0205','화영')">PJ-2026-0205</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">화영</td>
+          <td class="readonly-cell pre-curstep-cell">실사 완료</td>
+          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">박장성</td>
           <td><select class="cell-select sales-rep-select" data-value="전창길" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option>A</option><option selected>A-</option><option>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -459,14 +462,13 @@
           <td contenteditable="true">90</td>
           <td contenteditable="true"></td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="이상화"></select></td>
-          <td class="readonly-cell pre-curstep-cell">실사 완료</td>
-          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="note-cell" onclick="openNoteEditor(this)">밀양 지역 인허가 확인 필요</td>
           <td class="readonly-cell updated-cell">08/17 13:40</td>
-        </tr>
-      <tr data-step="계약 완료">
+        </tr><tr data-step="계약 완료">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0206','금성지티씨(주)')">PJ-2026-0206</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">금성지티씨(주)</td>
+          <td class="readonly-cell pre-curstep-cell">계약 완료</td>
+          <td class="readonly-cell pre-status-cell">완료</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">이호선</td>
           <td><select class="cell-select sales-rep-select" data-value="전창길" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option selected>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -475,13 +477,13 @@
           <td contenteditable="true">150</td>
           <td contenteditable="true">150</td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="이상화"></select></td>
-          <td class="readonly-cell pre-curstep-cell">계약 완료</td>
-          <td class="readonly-cell pre-status-cell">완료</td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">07/15 09:00</td>
         </tr><tr data-step="계약 완료">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0207','동희산업')">PJ-2026-0207</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">동희산업</td>
+          <td class="readonly-cell pre-curstep-cell">계약 완료</td>
+          <td class="readonly-cell pre-status-cell">완료</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">최강복</td>
           <td><select class="cell-select sales-rep-select" data-value="전창길" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option>A</option><option selected>A-</option><option>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -490,14 +492,13 @@
           <td contenteditable="true">75</td>
           <td contenteditable="true">75</td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="김상철"></select></td>
-          <td class="readonly-cell pre-curstep-cell">계약 완료</td>
-          <td class="readonly-cell pre-status-cell">완료</td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/01 09:00</td>
-        </tr>
-      <tr data-step="최초제안서 송부">
+        </tr><tr data-step="최초제안서 송부">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0208','삼성정밀')">PJ-2026-0208</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">삼성정밀</td>
+          <td class="readonly-cell pre-curstep-cell">최초제안서 송부</td>
+          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">안용희</td>
           <td><select class="cell-select sales-rep-select" data-value="김상철" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option selected>B</option><option>B-</option><option>C이하</option></select></td>
@@ -506,13 +507,13 @@
           <td contenteditable="true">85</td>
           <td contenteditable="true"></td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="이상화"></select></td>
-          <td class="readonly-cell pre-curstep-cell">최초제안서 송부</td>
-          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/20 10:00</td>
         </tr><tr data-step="사전검토 요청">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0209','한일소재')">PJ-2026-0209</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">한일소재</td>
+          <td class="readonly-cell pre-curstep-cell">사전검토 요청</td>
+          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">이호선</td>
           <td><select class="cell-select sales-rep-select" data-value="전창길" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option selected>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -521,13 +522,13 @@
           <td contenteditable="true">110</td>
           <td contenteditable="true"></td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="김영훈"></select></td>
-          <td class="readonly-cell pre-curstep-cell">사전검토 요청</td>
-          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/22 09:00</td>
         </tr><tr data-step="고객 최종미팅">
           <td class="mono link-cell" onclick="selectPreProject('PJ-2026-0210','대신전자')">PJ-2026-0210</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">대신전자</td>
+          <td class="readonly-cell pre-curstep-cell">고객 최종미팅</td>
+          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">전남일</td>
           <td><select class="cell-select sales-rep-select" data-value="김대호" disabled style="background:var(--paper);"></select></td>
           <td><select class="cell-select"><option>A+</option><option>A</option><option>A-</option><option selected>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -536,8 +537,6 @@
           <td contenteditable="true">70</td>
           <td contenteditable="true"></td>
           <td><select class="cell-select role-linked-select" data-role="실사" data-value="김상철"></select></td>
-          <td class="readonly-cell pre-curstep-cell">고객 최종미팅</td>
-          <td class="readonly-cell pre-status-cell">진행중</td>
           <td class="note-cell" onclick="openNoteEditor(this)">부지 임대차 계약서 검토 중</td>
           <td class="readonly-cell updated-cell">08/21 13:20</td>
         </tr>
@@ -576,7 +575,7 @@
       </div>
       <div class="grid-wrap" style="max-height:380px;overflow-y:auto;">
         <table class="editgrid" id="bizdash-pre-table" style="min-width:1650px;">
-          <tr><th>사전프로젝트번호</th><th>고객회사명</th><th>영업프리랜서</th><th>영업담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>최초설치용량(kW)</th><th>계약설치용량(kW)</th><th>실사담당</th><th>현재공정</th><th>진행상태</th><th>업데이트일시</th></tr>
+          <tr><th>사전프로젝트번호</th><th>고객사명</th><th>현재공정</th><th>진행상태</th><th>영업프리랜서</th><th>영업담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>최초설치용량(kW)</th><th>계약설치용량(kW)</th><th>실사담당</th><th>업데이트일시</th></tr>
         </table>
       </div>
     </div>
@@ -586,7 +585,7 @@
       </div>
       <div class="grid-wrap" style="max-height:380px;overflow-y:auto;">
         <table class="editgrid" id="bizdash-prog-table" style="min-width:1750px;">
-          <tr><th>본프로젝트번호</th><th>사전프로젝트번호</th><th>고객사</th><th>현재공정</th><th>설계담당</th><th>시공담당</th><th>행정담당</th><th>실사담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>계약설치용량(kW)</th><th>최종설치용량(kW)</th><th>착수예정일</th><th>진행상태</th><th>업데이트일시</th></tr>
+          <tr><th>진행프로젝트번호</th><th>고객사명</th><th>현재공정</th><th>진행상태</th><th>설계담당</th><th>시공담당</th><th>행정담당</th><th>실사담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>계약설치용량(kW)</th><th>최종설치용량(kW)</th><th>착수예정일</th><th>사전프로젝트번호</th><th>업데이트일시</th></tr>
         </table>
       </div>
     </div>
@@ -1204,10 +1203,11 @@
   <div class="grid-content">
     <div class="grid-wrap">
       <table class="editgrid" id="grid-holds">
-        <tr><th>사전프로젝트번호</th><th>본프로젝트번호</th><th>영업프리랜서</th><th>영업담당</th><th>발생일자</th><th>보류취소사유</th><th>보고서</th><th>검토확정</th><th>확정일시</th><th>업데이트일시</th></tr>
+        <tr><th>사전프로젝트번호</th><th>진행프로젝트번호</th><th>고객사명</th><th>영업프리랜서</th><th>영업담당</th><th>발생일자</th><th>보류취소사유</th><th>보고서</th><th>검토확정</th><th>확정일시</th><th>업데이트일시</th></tr>
         <tr>
           <td class="mono link-cell" onclick="go('dashboard');selectPreProject('PJ-2026-0205','화영')">PJ-2026-0205</td>
           <td class="mono" style="color:var(--slate);">-</td>
+          <td class="readonly-cell" style="background:var(--paper);" title="REF">화영</td>
           <td contenteditable="true">박장성</td>
           <td contenteditable="true">전창길</td>
           <td contenteditable="true">2026-08-17</td>
@@ -1216,6 +1216,19 @@
           <td><select class="cell-select" data-prev="확정완료" onchange="handleHoldConfirm(this)"><option>대기</option><option selected>확정완료</option></select></td>
           <td class="readonly-cell hold-confirm-date">2026-08-18 09:20</td>
           <td class="readonly-cell updated-cell">08/18 09:20</td>
+        </tr>
+        <tr>
+          <td class="mono" style="color:var(--slate);">-</td>
+          <td class="mono link-cell" onclick="go('progress');selectProgressProject('PJ-2026-0135','청호산업')">PJ-2026-0135</td>
+          <td class="readonly-cell" style="background:var(--paper);" title="REF">청호산업</td>
+          <td contenteditable="true">안용희</td>
+          <td contenteditable="true">김대호</td>
+          <td contenteditable="true">2026-08-20</td>
+          <td contenteditable="true">인허가 문제로 시공 중단, 취소 검토</td>
+          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);" onclick="attachDemoFile(this)" data-files='["보류취소_보고서.pdf"]'>첨부보기 (1)</button></td>
+          <td><select class="cell-select" data-prev="확정완료" onchange="handleHoldConfirm(this)"><option>대기</option><option selected>확정완료</option></select></td>
+          <td class="readonly-cell hold-confirm-date">2026-08-21 10:00</td>
+          <td class="readonly-cell updated-cell">08/21 10:00</td>
         </tr>
       </table>
 
@@ -1341,12 +1354,11 @@
   <div class="grid-content" id="progress-grid-section">
     <div class="grid-wrap" style="max-height:420px;overflow-y:auto;">
       <table class="editgrid" id="grid-progress">
-        <tr><th>본프로젝트번호</th><th>사전프로젝트번호</th><th>고객사</th><th>현재공정</th><th>설계담당</th><th>시공담당</th><th>행정담당</th><th>실사담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>계약설치용량(kW)</th><th>최종설치용량(kW)</th><th>착수예정일</th><th>진행상태</th><th>업데이트일시</th></tr>
-        <tr data-status="진행중" data-step="구조물 설치">
+        <tr><th>진행프로젝트번호</th><th>고객사명</th><th>현재공정</th><th>진행상태</th><th>설계담당</th><th>시공담당</th><th>행정담당</th><th>실사담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>계약설치용량(kW)</th><th>최종설치용량(kW)</th><th>착수예정일</th><th>사전프로젝트번호</th><th>업데이트일시</th></tr><tr data-status="진행중" data-step="구조물 설치">
           <td class="mono link-cell" onclick="selectProgressProject('PJ-2026-0189','금성지티씨(주)')">PJ-2026-0189</td>
-          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0206</td>
           <td class="readonly-cell" style="background:var(--paper);">금성지티씨(주)</td>
           <td class="readonly-cell prog-curstep-cell" style="background:var(--paper);">구조물 설치</td>
+          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
           <td><select class="cell-select role-linked-select" data-role="설계" data-value="권순봉"></select></td>
           <td><select class="cell-select role-linked-select" data-role="시공" data-value="김영훈"></select></td>
           <td><select class="cell-select role-linked-select" data-role="행정" data-value="김정훈"></select></td>
@@ -1357,14 +1369,13 @@
           <td contenteditable="true">150</td>
           <td contenteditable="true"></td>
           <td class="readonly-cell" style="background:var(--paper);">2026-07-15</td>
-          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
+          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0206</td>
           <td class="readonly-cell updated-cell">08/18 08:30</td>
-        </tr>
-        <tr data-status="진행중" data-step="전기사용 신청">
+        </tr><tr data-status="진행중" data-step="전기사용 신청">
           <td class="mono link-cell" onclick="selectProgressProject('PJ-2026-0174','동희산업')">PJ-2026-0174</td>
-          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0207</td>
           <td class="readonly-cell" style="background:var(--paper);">동희산업</td>
           <td class="readonly-cell prog-curstep-cell" style="background:var(--paper);">전기사용 신청</td>
+          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
           <td><select class="cell-select role-linked-select" data-role="설계" data-value="장기영"></select></td>
           <td><select class="cell-select role-linked-select" data-role="시공" data-value="김영훈"></select></td>
           <td><select class="cell-select role-linked-select" data-role="행정" data-value="이상화"></select></td>
@@ -1375,15 +1386,13 @@
           <td contenteditable="true">75</td>
           <td contenteditable="true"></td>
           <td class="readonly-cell" style="background:var(--paper);">2026-08-01</td>
-          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
+          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0207</td>
           <td class="readonly-cell updated-cell">08/16 17:10</td>
-        </tr>
-      
-        <tr data-status="진행중" data-step="모듈 설치">
+        </tr><tr data-status="진행중" data-step="모듈 설치">
           <td class="mono link-cell" onclick="selectProgressProject('PJ-2026-0160','유성기계')">PJ-2026-0160</td>
-          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0211</td>
           <td class="readonly-cell" style="background:var(--paper);">유성기계</td>
           <td class="readonly-cell prog-curstep-cell" style="background:var(--paper);">모듈 설치</td>
+          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
           <td><select class="cell-select role-linked-select" data-role="설계" data-value="권순봉"></select></td>
           <td><select class="cell-select role-linked-select" data-role="시공" data-value="김영훈"></select></td>
           <td><select class="cell-select role-linked-select" data-role="행정" data-value="김정훈"></select></td>
@@ -1394,14 +1403,13 @@
           <td contenteditable="true">130</td>
           <td contenteditable="true"></td>
           <td class="readonly-cell" style="background:var(--paper);">2026-06-10</td>
-          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
+          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0211</td>
           <td class="readonly-cell updated-cell">08/19 10:00</td>
-        </tr>
-        <tr data-status="진행중" data-step="공사계획 신고">
+        </tr><tr data-status="진행중" data-step="공사계획 신고">
           <td class="mono link-cell" onclick="selectProgressProject('PJ-2026-0148','동남물산')">PJ-2026-0148</td>
-          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0212</td>
           <td class="readonly-cell" style="background:var(--paper);">동남물산</td>
           <td class="readonly-cell prog-curstep-cell" style="background:var(--paper);">공사계획 신고</td>
+          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
           <td><select class="cell-select role-linked-select" data-role="설계" data-value="장기영"></select></td>
           <td><select class="cell-select role-linked-select" data-role="시공" data-value="김영훈"></select></td>
           <td><select class="cell-select role-linked-select" data-role="행정" data-value="이상화"></select></td>
@@ -1412,14 +1420,13 @@
           <td contenteditable="true">90</td>
           <td contenteditable="true"></td>
           <td class="readonly-cell" style="background:var(--paper);">2026-08-05</td>
-          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
+          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0212</td>
           <td class="readonly-cell updated-cell">08/20 11:20</td>
-        </tr>
-        <tr data-status="진행중" data-step="계통연계 협의">
+        </tr><tr data-status="진행중" data-step="계통연계 협의">
           <td class="mono link-cell" onclick="selectProgressProject('PJ-2026-0135','청호산업')">PJ-2026-0135</td>
-          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0213</td>
           <td class="readonly-cell" style="background:var(--paper);">청호산업</td>
           <td class="readonly-cell prog-curstep-cell" style="background:var(--paper);">계통연계 협의</td>
+          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
           <td><select class="cell-select role-linked-select" data-role="설계" data-value="권순봉"></select></td>
           <td><select class="cell-select role-linked-select" data-role="시공" data-value="김영훈"></select></td>
           <td><select class="cell-select role-linked-select" data-role="행정" data-value="김정훈"></select></td>
@@ -1430,14 +1437,13 @@
           <td contenteditable="true">105</td>
           <td contenteditable="true"></td>
           <td class="readonly-cell" style="background:var(--paper);">2026-07-20</td>
-          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
+          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0213</td>
           <td class="readonly-cell updated-cell">08/18 15:40</td>
-        </tr>
-        <tr data-status="완료" data-step="상업운전개시">
+        </tr><tr data-status="완료" data-step="상업운전개시">
           <td class="mono link-cell" onclick="selectProgressProject('PJ-2026-0099','대흥테크')">PJ-2026-0099</td>
-          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0214</td>
           <td class="readonly-cell" style="background:var(--paper);">대흥테크</td>
           <td class="readonly-cell prog-curstep-cell" style="background:var(--paper);">상업운전개시</td>
+          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">완료</td>
           <td><select class="cell-select role-linked-select" data-role="설계" data-value="장기영"></select></td>
           <td><select class="cell-select role-linked-select" data-role="시공" data-value="김영훈"></select></td>
           <td><select class="cell-select role-linked-select" data-role="행정" data-value="이상화"></select></td>
@@ -1448,14 +1454,13 @@
           <td contenteditable="true">160</td>
           <td contenteditable="true">160</td>
           <td class="readonly-cell" style="background:var(--paper);">2026-04-01</td>
-          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">완료</td>
+          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0214</td>
           <td class="readonly-cell updated-cell">08/10 09:10</td>
-        </tr>
-        <tr data-status="진행중" data-step="자재 발주">
+        </tr><tr data-status="진행중" data-step="자재 발주">
           <td class="mono link-cell" onclick="selectProgressProject('PJ-2026-0121','한빛산업')">PJ-2026-0121</td>
-          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0215</td>
           <td class="readonly-cell" style="background:var(--paper);">한빛산업</td>
           <td class="readonly-cell prog-curstep-cell" style="background:var(--paper);">자재 발주</td>
+          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
           <td><select class="cell-select role-linked-select" data-role="설계" data-value="권순봉"></select></td>
           <td><select class="cell-select role-linked-select" data-role="시공" data-value="김영훈"></select></td>
           <td><select class="cell-select role-linked-select" data-role="행정" data-value="김정훈"></select></td>
@@ -1466,14 +1471,13 @@
           <td contenteditable="true">65</td>
           <td contenteditable="true"></td>
           <td class="readonly-cell" style="background:var(--paper);">2026-08-12</td>
-          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
+          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0215</td>
           <td class="readonly-cell updated-cell">08/21 08:50</td>
-        </tr>
-        <tr data-status="진행중" data-step="사용전 검사">
+        </tr><tr data-status="진행중" data-step="사용전 검사">
           <td class="mono link-cell" onclick="selectProgressProject('PJ-2026-0187','성진enc')">PJ-2026-0187</td>
-          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0216</td>
           <td class="readonly-cell" style="background:var(--paper);">성진enc</td>
           <td class="readonly-cell prog-curstep-cell" style="background:var(--paper);">사용전 검사</td>
+          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
           <td><select class="cell-select role-linked-select" data-role="설계" data-value="장기영"></select></td>
           <td><select class="cell-select role-linked-select" data-role="시공" data-value="김영훈"></select></td>
           <td><select class="cell-select role-linked-select" data-role="행정" data-value="이상화"></select></td>
@@ -1484,7 +1488,7 @@
           <td contenteditable="true">120</td>
           <td contenteditable="true">120</td>
           <td class="readonly-cell" style="background:var(--paper);">2026-05-15</td>
-          <td class="readonly-cell prog-status-cell" style="background:var(--paper);">진행중</td>
+          <td class="mono link-cell" onclick="go('dashboard')">PJ-2026-0216</td>
           <td class="readonly-cell updated-cell">08/17 14:00</td>
         </tr>
       </table>
@@ -1493,7 +1497,7 @@
 
   <div class="panel" style="margin:20px 26px 0;">
     <div class="panel-head">
-      <div class="panel-head-title">공정 현황 — <span id="progress-current-label" style="color:var(--slate);font-weight:500;">본프로젝트번호를 클릭해 선택</span> <span id="progress-unset-badge" class="unset-blink" style="display:none;">공정관리 미수립</span></div>
+      <div class="panel-head-title">공정 현황 — <span id="progress-current-label" style="color:var(--slate);font-weight:500;">진행프로젝트번호를 클릭해 선택</span> <span id="progress-unset-badge" class="unset-blink" style="display:none;">공정관리 미수립</span></div>
       <button class="btn-mini" style="background:var(--navy-3);margin-left:auto;" onclick="goToProcessDetail('prog')">공정관리 이동 ↓</button>
     </div>
     <div class="timeline-wrap" id="progress-timeline"></div>
@@ -1890,8 +1894,8 @@
     { label: '활동상태', getFn: tr => { const s = tr.children[4].querySelector('select'); return s ? s.value : ''; } },
   ]);
   setupInlineFilters('grid-holds', 'holds-filters', [
-    { label: '영업프리랜서', getFn: tr => tr.children[2] ? tr.children[2].textContent.trim() : '' },
-    { label: '영업담당', getFn: tr => tr.children[3] ? tr.children[3].textContent.trim() : '' },
+    { label: '영업프리랜서', getFn: tr => tr.children[3] ? tr.children[3].textContent.trim() : '' },
+    { label: '영업담당', getFn: tr => tr.children[4] ? tr.children[4].textContent.trim() : '' },
   ]);
   setupInlineFilters('grid-customers', 'customers-filters', [
     { label: '영업프리랜서', getFn: tr => { const s = tr.children[6].querySelector('select'); return s ? s.value : ''; } },
@@ -2148,12 +2152,14 @@
     tr.innerHTML = `
       <td class="mono" contenteditable="true"></td>
       <td class="mono" contenteditable="true"></td>
+      <td class="readonly-cell" style="background:var(--paper);" title="REF">-</td>
+      <td contenteditable="true"></td>
       <td contenteditable="true"></td>
       <td contenteditable="true"></td>
       <td contenteditable="true"></td>
       <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);" onclick="attachDemoFile(this)" data-files='["보류취소_보고서.pdf"]'>첨부보기 (1)</button></td>
-      <td><select class="cell-select"><option selected>대기</option><option>서명완료</option></select></td>
-      <td class="readonly-cell">-</td>
+      <td><select class="cell-select" data-prev="대기" onchange="handleHoldConfirm(this)"><option selected>대기</option><option>확정완료</option></select></td>
+      <td class="readonly-cell hold-confirm-date">-</td>
       <td class="readonly-cell updated-cell">-</td>`;
     (table.tBodies[0] || table).appendChild(tr);
     document.getElementById('save-holds').disabled = false;
@@ -2276,11 +2282,12 @@
     const status = computeProjectStatus('prog', id, data);
     const row = Array.from(document.querySelectorAll('#grid-progress tr')).find(r=>r.querySelector('.link-cell') && r.querySelector('.link-cell').textContent.trim()===id);
     if(row){
-      row.children[3].textContent = curStepName;
+      const curCell = row.querySelector('.prog-curstep-cell');
+      if(curCell) curCell.textContent = curStepName;
       row.dataset.step = curStepName;
       row.dataset.status = status;
-      const statusCell = row.children[14];
-      if(statusCell) statusCell.textContent = status;
+      const statusCell = row.querySelector('.prog-status-cell');
+      if(statusCell) statusCell.innerHTML = getDelayBadgeHtml('prog', id);
     }
     return { curIdx, curStepName, status, data, name };
   }
@@ -2298,7 +2305,7 @@
       if(curCell) curCell.textContent = curStepName;
       row.dataset.step = curStepName;
       const statusCell = row.querySelector('.pre-status-cell');
-      if(statusCell) statusCell.textContent = status;
+      if(statusCell) statusCell.innerHTML = getDelayBadgeHtml('pre', id);
     }
     return { curIdx, curStepName, status, data, name };
   }
@@ -2389,7 +2396,7 @@
       const projId = link.textContent.trim();
       const otherId = tr.children[1] ? tr.children[1].textContent.trim() : '';
       if(projId === id || otherId === id){
-        const sel = tr.children[7] ? tr.children[7].querySelector('select') : null;
+        const sel = tr.children[8] ? tr.children[8].querySelector('select') : null;
         if(sel && sel.value === '확정완료') return true;
       }
     }
@@ -2401,6 +2408,40 @@
     const lastStage = data[data.length - 1].stage;
     if(lastStage === '완료') return '완료';
     return '진행중';
+  }
+  // 사업현황 대시보드: 진행상태 배지 계산 (7단계 — 취소보류 > 완료(지연/정상) > 지연중 > 미진행 > 진행중 > 예정)
+  function getDelayBadgeHtml(kind, id){
+    if(isHeldConfirmed(id)) return `<span class="badge hold">취소보류</span>`;
+    const data = getStepData(kind, id);
+    const today = fmtDate(new Date());
+    const lastStep = data[data.length - 1];
+
+    // 완료: 마지막 공정 실적종료일이 입력됨
+    if(lastStep.actualEnd){
+      const isLate = lastStep.planEnd && lastStep.planEnd < lastStep.actualEnd;
+      if(isLate) return `<span class="badge" style="background:#FDF0E1;color:var(--amber-dark);">완료(지연)</span>`;
+      return `<span class="badge" style="background:var(--info-blue-bg);color:var(--info-blue);font-weight:700;">완료(정상)</span>`;
+    }
+
+    // 아직 완료 안 됨 — 현재(첫 미완료) 공정 기준으로 판단
+    const curIdx = computeCurrentIndex(data);
+    const curStep = data[curIdx];
+    if(!curStep) return `<span class="badge" style="background:#EEF2F7;color:var(--slate);">예정</span>`;
+
+    // 지연중: 계획종료일 < 오늘, 실적종료일 미입력 (미진행보다 우선)
+    if(curStep.planEnd && curStep.planEnd < today && !curStep.actualEnd){
+      return `<span class="urgent-badge"><span class="urgent-dot"></span>지연중</span>`;
+    }
+    // 미진행: 계획시작일 < 오늘, 실적시작일 미입력
+    if(curStep.planStart && curStep.planStart < today && !curStep.actualStart){
+      return `<span class="urgent-badge" style="font-weight:700;"><span class="urgent-dot"></span>미진행</span>`;
+    }
+    // 진행중: 실적시작일 입력됨, 계획종료일 > 오늘
+    if(curStep.actualStart && curStep.planEnd && curStep.planEnd > today){
+      return `<span class="badge ok">진행중</span>`;
+    }
+    // 예정: 계획시작일 > 오늘
+    return `<span class="badge" style="background:#EEF2F7;color:var(--slate);">예정</span>`;
   }
 
   const STAGE_COLORS = { '예정':'background:#EEF2F7;color:var(--slate);', '진행중':'background:#FFF3DE;color:var(--amber-dark);', '완료':'background:var(--success-bg);color:var(--success);', '보류취소':'background:#FCE9E9;color:var(--danger);' };
@@ -2640,9 +2681,9 @@
   }
   function isAssignedToPreRow(tr, userName){
     const company = tr.children[1] ? tr.children[1].textContent.trim() : '';
-    const freelancer = tr.children[2] ? tr.children[2].textContent.trim() : '';
+    const freelancer = tr.children[4] ? tr.children[4].textContent.trim() : '';
     const sales = tr.querySelector('.sales-rep-select') ? tr.querySelector('.sales-rep-select').value : '';
-    const insp = tr.children[9] ? (tr.children[9].querySelector('select') ? tr.children[9].querySelector('select').value : tr.children[9].textContent.trim()) : '';
+    const insp = tr.children[11] ? (tr.children[11].querySelector('select') ? tr.children[11].querySelector('select').value : tr.children[11].textContent.trim()) : '';
     return [freelancer, sales, insp].includes(userName);
   }
   function isAssignedToProgRow(tr, userName){
@@ -2672,19 +2713,19 @@
     preRows.forEach(r=>{
       const id = r.querySelector('.link-cell').textContent.trim();
       const company = r.children[1].textContent.trim();
-      const freelancer = r.children[2].textContent.trim();
+      const freelancer = r.children[4].textContent.trim();
       const sales = r.querySelector('.sales-rep-select') ? r.querySelector('.sales-rep-select').value : '-';
-      const credit = r.children[4].querySelector('select') ? r.children[4].querySelector('select').value : '-';
-      const mw = r.children[5].textContent.trim();
-      const biz = r.children[6].querySelector('select') ? r.children[6].querySelector('select').value : '-';
-      const cap0 = r.children[7].textContent.trim();
-      const cap1 = r.children[8].textContent.trim();
-      const insp = r.children[9].querySelector('select') ? r.children[9].querySelector('select').value : (r.children[9].textContent.trim() || '-');
+      const credit = r.children[6].querySelector('select') ? r.children[6].querySelector('select').value : '-';
+      const mw = r.children[7].textContent.trim();
+      const biz = r.children[8].querySelector('select') ? r.children[8].querySelector('select').value : '-';
+      const cap0 = r.children[9].textContent.trim();
+      const cap1 = r.children[10].textContent.trim();
+      const insp = r.children[11].querySelector('select') ? r.children[11].querySelector('select').value : (r.children[11].textContent.trim() || '-');
       const curstep = r.querySelector('.pre-curstep-cell') ? r.querySelector('.pre-curstep-cell').textContent.trim() : '-';
       const status = r.querySelector('.pre-status-cell') ? r.querySelector('.pre-status-cell').textContent.trim() : '-';
       const updated = r.querySelector('.updated-cell') ? r.querySelector('.updated-cell').textContent.trim() : '-';
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td class="mono link-cell" onclick="bizdashGoToPre('${id}','${company.replace(/'/g,"\\'")}')">${id}</td><td>${company}</td><td>${freelancer}</td><td>${sales}</td><td>${credit}</td><td>${mw}</td><td>${biz}</td><td>${cap0}</td><td>${cap1}</td><td>${insp}</td><td>${curstep}</td><td>${status}</td><td class="readonly-cell">${updated}</td>`;
+      tr.innerHTML = `<td class="mono link-cell" onclick="bizdashGoToPre('${id}','${company.replace(/'/g,"\\'")}')">${id}</td><td>${company}</td><td>${curstep}</td><td>${getDelayBadgeHtml('pre', id)}</td><td>${freelancer}</td><td>${sales}</td><td>${credit}</td><td>${mw}</td><td>${biz}</td><td>${cap0}</td><td>${cap1}</td><td>${insp}</td><td class="readonly-cell">${updated}</td>`;
       preTable.appendChild(tr);
     });
     document.getElementById('bizdash-pre-total').textContent = `사전 프로젝트 현황 — ${preRows.length}건`;
@@ -2697,9 +2738,8 @@
     progTable.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
     progRows.forEach(r=>{
       const id = r.children[0].textContent.trim();
-      const preId = r.children[1].textContent.trim();
-      const company = r.children[2].textContent.trim();
-      const curstep = r.children[3].textContent.trim();
+      const company = r.children[1].textContent.trim();
+      const curstep = r.querySelector('.prog-curstep-cell') ? r.querySelector('.prog-curstep-cell').textContent.trim() : r.children[2].textContent.trim();
       const design = r.children[4].querySelector('select') ? r.children[4].querySelector('select').value : '-';
       const cons = r.children[5].querySelector('select') ? r.children[5].querySelector('select').value : '-';
       const admin = r.children[6].querySelector('select') ? r.children[6].querySelector('select').value : '-';
@@ -2710,10 +2750,10 @@
       const cap1 = r.children[11].textContent.trim();
       const cap2 = r.children[12].textContent.trim();
       const startdate = r.children[13].textContent.trim();
-      const status = r.children[14] ? r.children[14].textContent.trim() : '-';
+      const preId = r.children[14].textContent.trim();
       const updated = r.querySelector('.updated-cell') ? r.querySelector('.updated-cell').textContent.trim() : '-';
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td class="mono link-cell" onclick="bizdashGoToProg('${id}','${company.replace(/'/g,"\\'")}')">${id}</td><td class="mono" style="color:var(--slate);">${preId}</td><td>${company}</td><td>${curstep}</td><td>${design}</td><td>${cons}</td><td>${admin}</td><td>${insp}</td><td>${credit}</td><td>${mw}</td><td>${biz}</td><td>${cap1}</td><td>${cap2}</td><td>${startdate}</td><td>${status}</td><td class="readonly-cell">${updated}</td>`;
+      tr.innerHTML = `<td class="mono link-cell" onclick="bizdashGoToProg('${id}','${company.replace(/'/g,"\\'")}')">${id}</td><td>${company}</td><td>${curstep}</td><td>${getDelayBadgeHtml('prog', id)}</td><td>${design}</td><td>${cons}</td><td>${admin}</td><td>${insp}</td><td>${credit}</td><td>${mw}</td><td>${biz}</td><td>${cap1}</td><td>${cap2}</td><td>${startdate}</td><td class="mono" style="color:var(--slate);">${preId}</td><td class="readonly-cell">${updated}</td>`;
       progTable.appendChild(tr);
     });
     document.getElementById('bizdash-prog-total').textContent = `진행 프로젝트 현황 — ${progRows.length}건`;
@@ -2814,7 +2854,7 @@
       }
     } else {
       const row = Array.from(document.querySelectorAll('#grid-progress tr')).find(r=>r.querySelector('.link-cell') && r.querySelector('.link-cell').textContent.trim()===id);
-      if(row){ row.children[3].textContent = newStepName; row.dataset.step = newStepName; }
+      if(row){ const cc = row.querySelector('.prog-curstep-cell'); if(cc) cc.textContent = newStepName; row.dataset.step = newStepName; }
       selectProgressProject(id, proj.name);
       renderStepChips('progress-step-chips','grid-progress', PROG_STEPS, 'data-step', applyProgressFilter);
       applyProgressFilter();
@@ -2822,7 +2862,7 @@
       if(reachedFinal){
         // 상업운전개시 확정 → 진행상태는 selectProgressProject가 이미 자동 계산해 반영함
         if(row){
-          const preId = row.children[1].textContent.trim();
+          const preId = row.children[14].textContent.trim();
           const preRow = Array.from(document.querySelectorAll('#grid-pre-list tr')).find(r=>r.querySelector('.link-cell') && r.querySelector('.link-cell').textContent.trim()===preId);
           if(preRow){
             const preName = preRow.children[1].textContent.trim();
@@ -2852,9 +2892,76 @@
     });
     updateProgTotalCount();
   }
+  // 사업현황 대시보드에서 7단계 진행상태를 실제로 보여주기 위한 데모 데이터 강제 설정
+  function setupDemoStatusShowcase(){
+    const today = new Date();
+    const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate()-n); return fmtDate(d); };
+    const daysAhead = n => { const d = new Date(today); d.setDate(d.getDate()+n); return fmtDate(d); };
+
+    function setState(kind, id, state){
+      const data = getStepData(kind, id);
+      const curIdx = computeCurrentIndex(data);
+      const cur = data[curIdx];
+      const last = data[data.length - 1];
+      if(state === '진행중'){
+        cur.actualStart = fmtDate(today);
+        cur.actualEnd = '';
+        cur.planEnd = daysAhead(10);
+        cur.stage = '진행중';
+      } else if(state === '미진행'){
+        cur.planStart = daysAgo(3);
+        cur.planEnd = daysAhead(5);
+        cur.actualStart = '';
+        cur.actualEnd = '';
+        cur.stage = '예정';
+      } else if(state === '지연중'){
+        cur.planEnd = daysAgo(3);
+        if(!cur.actualStart) cur.actualStart = daysAgo(6);
+        cur.actualEnd = '';
+        cur.stage = '진행중';
+      } else if(state === '예정'){
+        cur.planStart = daysAhead(5);
+        cur.planEnd = daysAhead(10);
+        cur.actualStart = '';
+        cur.actualEnd = '';
+        cur.stage = '예정';
+      } else if(state === '완료정상'){
+        last.planEnd = '2026-09-01';
+        last.actualEnd = '2026-08-28';
+        if(!last.actualStart) last.actualStart = '2026-08-20';
+        last.stage = '완료';
+      } else if(state === '완료지연'){
+        last.planEnd = '2026-08-01';
+        last.actualEnd = '2026-08-20';
+        if(!last.actualStart) last.actualStart = '2026-07-25';
+        last.stage = '완료';
+      }
+    }
+
+    // 사전 프로젝트 — 취소보류(0205)는 취소보류관리에서 이미 확정되어 자동 반영됨
+    setState('pre', 'PJ-2026-0201', '진행중');
+    setState('pre', 'PJ-2026-0202', '미진행');
+    setState('pre', 'PJ-2026-0203', '지연중');
+    setState('pre', 'PJ-2026-0204', '예정');
+    setState('pre', 'PJ-2026-0206', '완료지연');
+    setState('pre', 'PJ-2026-0207', '완료정상');
+
+    // 진행 프로젝트 — 취소보류(0135)는 취소보류관리에서 이미 확정되어 자동 반영됨
+    setState('prog', 'PJ-2026-0189', '진행중');
+    setState('prog', 'PJ-2026-0174', '미진행');
+    setState('prog', 'PJ-2026-0160', '지연중');
+    setState('prog', 'PJ-2026-0148', '예정');
+    setState('prog', 'PJ-2026-0099', '완료정상');
+    setState('prog', 'PJ-2026-0121', '완료지연');
+  }
+  setupDemoStatusShowcase();
   syncAllProgRows();
   syncAllPreRows();
   syncCustomerStatusCells();
+  document.querySelectorAll('#grid-holds tr').forEach(tr=>{
+    if(tr.querySelector('th')) return;
+    applyHoldRowLockState(tr);
+  });
   selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name);
   selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name);
 
@@ -2906,7 +3013,7 @@
             <input value="${newId}" readonly style="width:100%;padding:8px 10px;border:1px solid var(--grid-line);border-radius:7px;font-size:12.5px;background:var(--paper);color:var(--slate);">
           </div>
           <div>
-            <label style="font-size:11px;color:var(--slate);display:block;margin-bottom:4px;">고객회사명 <span class="req">*</span> ${ro ? '<span style="color:var(--slate);font-weight:400;">(고객관리 연동)</span>' : ''}</label>
+            <label style="font-size:11px;color:var(--slate);display:block;margin-bottom:4px;">고객사명 <span class="req">*</span> ${ro ? '<span style="color:var(--slate);font-weight:400;">(고객관리 연동)</span>' : ''}</label>
             <input id="pre-form-customer" value="${prefillName || ''}" ${ro ? 'readonly' : ''} style="width:100%;padding:8px 10px;border:1px solid var(--grid-line);border-radius:7px;font-size:12.5px;${ro?roStyle:editStyle}">
           </div>
           <div>
@@ -2983,6 +3090,8 @@
       tr.innerHTML = `
         <td class="mono link-cell" onclick="selectPreProject('${newId}','${safeName}')">${newId}</td>
         <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">${name}</td>
+        <td class="readonly-cell pre-curstep-cell">${PRE_STEPS[0]}</td>
+        <td class="readonly-cell pre-status-cell" style="background:var(--paper);">진행중</td>
         <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">-</td>
         <td><select class="cell-select sales-rep-select" data-value="${sales}" disabled style="background:var(--paper);"></select></td>
         <td><select class="cell-select"><option>A+</option><option>A</option><option selected>A-</option><option>B+</option><option>B</option><option>B-</option><option>C이하</option></select></td>
@@ -2991,8 +3100,6 @@
         <td contenteditable="true">${cap}</td>
         <td contenteditable="true"></td>
         <td><select class="cell-select role-linked-select" data-role="실사" data-value="${inspector||''}"></select></td>
-        <td class="readonly-cell pre-curstep-cell">${PRE_STEPS[0]}</td>
-        <td class="readonly-cell pre-status-cell" style="background:var(--paper);">진행중</td>
         <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
         <td class="readonly-cell updated-cell">${nowStamp()}</td>`;
       { const tbody = table.tBodies[0] || table; tbody.insertBefore(tr, tbody.children[1]); }
@@ -3017,10 +3124,10 @@
       let credit = 'A', mw = '', biz = '자가소비형', cap = '';
       const preRow = Array.from(document.querySelectorAll('#grid-pre-list tr')).find(r=>r.querySelector('.link-cell') && r.querySelector('.link-cell').textContent.trim()===preId);
       if(preRow){
-        credit = preRow.children[4].querySelector('select').value;
-        mw = preRow.children[5].textContent.trim();
-        biz = preRow.children[6].querySelector('select').value;
-        cap = preRow.children[8].textContent.trim() || preRow.children[7].textContent.trim();
+        credit = preRow.children[6].querySelector('select').value;
+        mw = preRow.children[7].textContent.trim();
+        biz = preRow.children[8].querySelector('select').value;
+        cap = preRow.children[10].textContent.trim() || preRow.children[9].textContent.trim();
       }
       const creditOpts = ['A+','A','A-','B+','B','B-','C이하'];
       const bizOpts = ['자가소비형','임대형','기타']; // 진행 리스트 사업유형은 읽기전용
@@ -3032,9 +3139,9 @@
       const roStyle = 'style="background:var(--paper);"';
       tr.innerHTML = `
         <td class="mono link-cell" onclick="selectProgressProject('${newId}','${name.replace(/'/g, "\\'")}')">${newId}</td>
-        <td class="mono link-cell" onclick="go('dashboard')">${preId}</td>
         <td class="readonly-cell" ${roStyle}>${name}</td>
         <td class="readonly-cell prog-curstep-cell" ${roStyle}>${PROG_STEPS[0]}</td>
+        <td class="readonly-cell prog-status-cell" ${roStyle}>진행중</td>
         <td><select class="cell-select role-linked-select" data-role="설계" data-value=""></select></td>
         <td><select class="cell-select role-linked-select" data-role="시공" data-value=""></select></td>
         <td><select class="cell-select role-linked-select" data-role="행정" data-value=""></select></td>
@@ -3045,7 +3152,7 @@
         <td contenteditable="true">${cap}</td>
         <td contenteditable="true"></td>
         <td class="readonly-cell" ${roStyle}>${fmtDate(new Date())}</td>
-        <td class="readonly-cell prog-status-cell" ${roStyle}>진행중</td>
+        <td class="mono link-cell" onclick="go('dashboard')">${preId}</td>
         <td class="readonly-cell updated-cell">${nowStamp()}</td>`;
       { const tbody = table.tBodies[0] || table; tbody.insertBefore(tr, tbody.children[1]); }
       populateRoleLinkedSelects();
@@ -3231,7 +3338,7 @@
       const link = tr.querySelector('.link-cell');
       if(!link) return;
       const id = link.textContent.trim();
-      const company = tr.children[2] ? tr.children[2].textContent.trim() : '';
+      const company = tr.children[1] ? tr.children[1].textContent.trim() : '';
       const roles = [4,5,6,7].map(i=> tr.children[i] ? tr.children[i].textContent.trim() : '');
       if(company===name || roles.includes(name)) prog.push({ id, name: company });
     });
@@ -3240,10 +3347,11 @@
   function filterPreListByPerson(name){
     document.querySelectorAll('#grid-pre-list tr[data-step]').forEach(tr=>{
       const company = tr.children[1].textContent.trim();
-      const freelancer = tr.children[2].textContent.trim();
+      const freelancer = tr.children[4].textContent.trim();
       const salesSel = tr.querySelector('.sales-rep-select');
       const sales = salesSel ? salesSel.value : '';
-      const inspector = tr.children[8].textContent.trim();
+      const inspSel = tr.children[11] ? tr.children[11].querySelector('select') : null;
+      const inspector = inspSel ? inspSel.value : (tr.children[11] ? tr.children[11].textContent.trim() : '');
       const match = [company, freelancer, sales, inspector].includes(name);
       tr.style.display = match ? '' : 'none';
     });
@@ -3252,7 +3360,7 @@
   }
   function filterProgListByPerson(name){
     document.querySelectorAll('#grid-progress tr[data-status]').forEach(tr=>{
-      const company = tr.children[2].textContent.trim();
+      const company = tr.children[1].textContent.trim();
       const roles = [4,5,6,7].map(i=>tr.children[i].textContent.trim());
       const match = company===name || roles.includes(name);
       tr.style.display = match ? '' : 'none';
@@ -3309,16 +3417,37 @@
     const preList = document.getElementById('freelancer-pre-list');
     const progList = document.getElementById('freelancer-prog-list');
     preList.innerHTML = data.pre.length ? data.pre.map(p=>`<div class="link-cell" style="display:block;margin-bottom:4px;font-size:12px;" onclick="go('dashboard');selectPreProject('${p.id}','${p.name}')">${p.id} — ${p.name}</div>`).join('') : '<div style="font-size:12px;color:var(--slate);">진행중인 사전프로젝트 없음</div>';
-    progList.innerHTML = data.prog.length ? data.prog.map(p=>`<div class="link-cell" style="display:block;margin-bottom:4px;font-size:12px;" onclick="go('progress');selectProgressProject('${p.id}','${p.name}')">${p.id} — ${p.name}</div>`).join('') : '<div style="font-size:12px;color:var(--slate);">진행중인 본프로젝트 없음</div>';
+    progList.innerHTML = data.prog.length ? data.prog.map(p=>`<div class="link-cell" style="display:block;margin-bottom:4px;font-size:12px;" onclick="go('progress');selectProgressProject('${p.id}','${p.name}')">${p.id} — ${p.name}</div>`).join('') : '<div style="font-size:12px;color:var(--slate);">진행중인 진행프로젝트 없음</div>';
     document.getElementById('freelancer-projects-panel').classList.add('open');
   }
 
   // ---- 취소보류: 확정완료 선택 시 결재암호/서명 요구 ----
+  // 취소보류 확정된 행은 검토확정을 "대기"로 되돌리기 전까지 모든 필드 수정 불가
+  function applyHoldRowLockState(row){
+    const sel = row.children[8] ? row.children[8].querySelector('select') : null;
+    const locked = sel && sel.value === '확정완료';
+    [3,4,5,6].forEach(i=>{
+      const cell = row.children[i];
+      if(cell) cell.contentEditable = locked ? 'false' : 'true';
+    });
+    const attachBtn = row.children[7] ? row.children[7].querySelector('button') : null;
+    if(attachBtn) attachBtn.disabled = locked;
+    row.style.background = locked ? '#FAFBF9' : '';
+  }
   function handleHoldConfirm(sel){
-    if(sel.value !== '확정완료'){ sel.dataset.prev = sel.value; return; }
+    const prev = sel.dataset.prev || '대기';
+    const next = sel.value;
+    if(next === prev) return; // 실질적 변경 없음
+    // 확정완료로 전환하거나, 확정완료에서 대기로 되돌리는 경우 모두 결재암호·서명 필요
+    if(next !== '확정완료' && prev !== '확정완료'){
+      sel.dataset.prev = next;
+      return;
+    }
+    window._pendingHoldDirection = next;
+    const isConfirming = next === '확정완료';
     document.getElementById('modal-content').innerHTML = `
-      <div class="modal-title">보류·취소 확정 결재</div>
-      <div class="modal-sub">확정 처리하려면 결재암호를 입력하고 서명해 주세요.</div>
+      <div class="modal-title">${isConfirming ? '보류·취소 확정 결재' : '보류·취소 확정 취소(되돌리기) 결재'}</div>
+      <div class="modal-sub">${isConfirming ? '확정 처리하려면' : '확정을 취소하고 대기 상태로 되돌리려면(이후 모든 필드를 다시 수정할 수 있습니다)'} 결재암호를 입력하고 서명해 주세요.</div>
       <div style="margin-bottom:12px;">
         <label style="font-size:11.5px;color:var(--slate);display:block;margin-bottom:5px;">결재암호</label>
         <input type="password" id="hold-approve-pw" placeholder="결재암호 입력" style="width:100%;padding:9px 12px;border:1px solid var(--grid-line);border-radius:7px;font-size:13px;">
@@ -3329,7 +3458,7 @@
       </div>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="cancelHoldConfirm()">취소</button>
-        <button class="btn-save" style="opacity:1;cursor:pointer;" onclick="confirmHold()">확정</button>
+        <button class="btn-save" style="opacity:1;cursor:pointer;" onclick="confirmHold()">${isConfirming ? '확정' : '되돌리기'}</button>
       </div>`;
     document.getElementById('modal-overlay').classList.add('open');
     window._pendingHoldSelect = sel;
@@ -3345,10 +3474,12 @@
     if(!pw){ alert('결재암호를 입력해 주세요.'); return; }
     if(signPad.dataset.signed !== '1'){ alert('서명을 완료해 주세요.'); return; }
     const sel = window._pendingHoldSelect;
+    const direction = window._pendingHoldDirection;
     if(sel){
-      sel.dataset.prev = '확정완료';
+      sel.dataset.prev = direction;
       const row = sel.closest('tr');
-      row.querySelector('.hold-confirm-date').textContent = nowStamp();
+      row.querySelector('.hold-confirm-date').textContent = direction === '확정완료' ? nowStamp() : '-';
+      applyHoldRowLockState(row);
     }
     closeModal();
   }
