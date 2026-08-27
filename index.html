@@ -346,11 +346,10 @@
     <p class="welcome-sub">사전검토부터 상업운전까지, 하나의 흐름으로</p>
     <div class="welcome-form">
       <label>로그인 이메일</label>
-      <input type="text" placeholder="name@daewoonenc.com">
+      <input type="text" id="login-email" placeholder="name@daewoonenc.com">
       <label>비밀번호</label>
-      <input type="password" placeholder="••••••••">
-      <label>데모: 로그인 사용자 선택</label>
-      <select id="demo-login-user" style="width:100%;padding:10px 12px;border-radius:7px;border:1px solid var(--grid-line);font-size:13px;margin-bottom:14px;"></select>
+      <input type="password" id="login-password" placeholder="••••••••">
+      <div id="login-error" style="color:var(--danger);font-size:12px;margin-bottom:10px;display:none;">이메일 또는 비밀번호가 일치하지 않습니다.</div>
       <button class="btn-primary" onclick="doLogin()">로그인</button>
     </div>
     <div class="welcome-foot">© 2026 대운이엔씨(주). All rights reserved. 무단 복제·배포 금지<br>본 시스템은 대운이엔씨(주)가 자체 개발·소유하며, 무단 접근 및 이용 시 법적 책임을 물을 수 있습니다.</div>
@@ -765,131 +764,121 @@
   <div class="grid-content">
     <div class="grid-wrap">
       <table class="editgrid" id="grid-users">
-        <tr><th>성명<span class="req">*</span></th><th>직위<span class="req">*</span></th><th>시스템 역할<span class="req">*</span></th><th>로그인 이메일<span class="req">*</span></th><th>전화번호<span class="req">*</span></th><th>근무여부<span class="req">*</span></th><th>최근로그인</th><th>계정잠금</th><th>결재PIN</th><th>업데이트일시</th><th>기기</th></tr>
-        <tr>
+        <tr><th>성명<span class="req">*</span></th><th>직위<span class="req">*</span></th><th>시스템 역할<span class="req">*</span></th><th>로그인 이메일<span class="req">*</span></th><th>전화번호<span class="req">*</span></th><th>비밀번호<span class="req">*</span></th><th>근무여부<span class="req">*</span></th><th>최근로그인</th><th>계정잠금</th><th>결재PIN</th><th>업데이트일시</th><th>기기</th></tr><tr>
           <td contenteditable="true" class="link-cell">전창길</td>
           <td><select class="cell-select"><option>사원</option><option>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option selected>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="시스템관리자,영업" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">시스템관리자</span><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">영업</span></td>
-          <td contenteditable="true">jeoncg@daewoonenc.com</td>
+          <td contenteditable="true">jeoncg@gmail.com</td>
           <td contenteditable="true">010-3571-7588</td>
-          <td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
+          <td contenteditable="true">01035717588</td><td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
           <td class="readonly-cell">08/19 08:40</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--success);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="1">설정됨</button></td>
           <td class="readonly-cell updated-cell">08/19 08:40</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('전창길')">기기보기</button></td>
-        </tr>
-        <tr>
+        </tr><tr>
           <td contenteditable="true" class="link-cell">김대호</td>
-          <td><select class="cell-select"><option>사원</option><option>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option>부사장</option><option>대표</option><option>회장</option></select></td>
+          <td><select class="cell-select"><option>사원</option><option>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option>부사장</option><option selected>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="대표,영업" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">대표</span><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">영업</span></td>
-          <td contenteditable="true">ae3210@daewoonenc.com</td>
+          <td contenteditable="true">ae3210@gmail.com</td>
           <td contenteditable="true">010-3534-4308</td>
-          <td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
+          <td contenteditable="true">01035344308</td><td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
           <td class="readonly-cell">08/22 09:00</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--success);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="1">설정됨</button></td>
           <td class="readonly-cell updated-cell">08/22 09:00</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('김대호')">기기보기</button></td>
-        </tr>
-        <tr>
+        </tr><tr>
           <td contenteditable="true" class="link-cell">권순봉</td>
           <td><select class="cell-select"><option>사원</option><option>주임</option><option selected>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="설계,행정" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">설계</span><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">행정</span></td>
-          <td contenteditable="true">sbkwon@daewoonenc.com</td>
+          <td contenteditable="true">sbkwon@gmail.com</td>
           <td contenteditable="true">010-9115-9650</td>
-          <td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
+          <td contenteditable="true">01091159650</td><td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
           <td class="readonly-cell">08/21 09:10</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button></td>
           <td class="readonly-cell updated-cell">08/21 09:10</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('권순봉')">기기보기</button></td>
-        </tr>
-        <tr>
+        </tr><tr>
           <td contenteditable="true" class="link-cell">김영훈</td>
           <td><select class="cell-select"><option>사원</option><option>주임</option><option>대리</option><option selected>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="설계,시공,실사" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">설계</span><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">시공</span><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">실사</span></td>
-          <td contenteditable="true">yhkim@daewoonenc.com</td>
+          <td contenteditable="true">yhkim@gmail.com</td>
           <td contenteditable="true">010-6524-0076</td>
-          <td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
+          <td contenteditable="true">01065240076</td><td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
           <td class="readonly-cell">08/21 08:50</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button></td>
           <td class="readonly-cell updated-cell">08/21 08:50</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('김영훈')">기기보기</button></td>
-        </tr>
-        <tr>
+        </tr><tr>
           <td contenteditable="true" class="link-cell">이상화</td>
           <td><select class="cell-select"><option>사원</option><option selected>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="실사,행정" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">실사</span><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">행정</span></td>
-          <td contenteditable="true">shlee@daewoonenc.com</td>
+          <td contenteditable="true">shlee@gmail.com</td>
           <td contenteditable="true">010-9943-2036</td>
-          <td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
+          <td contenteditable="true">01099432036</td><td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
           <td class="readonly-cell">08/20 17:20</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button></td>
           <td class="readonly-cell updated-cell">08/20 17:20</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('이상화')">기기보기</button></td>
-        </tr>
-        <tr>
+        </tr><tr>
           <td contenteditable="true" class="link-cell">김정훈</td>
           <td><select class="cell-select"><option>사원</option><option>주임</option><option selected>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="행정" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">행정</span></td>
-          <td contenteditable="true">jhkim@daewoonenc.com</td>
+          <td contenteditable="true">jhkim@gmail.com</td>
           <td contenteditable="true">010-4018-5367</td>
-          <td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
+          <td contenteditable="true">01040185367</td><td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
           <td class="readonly-cell">08/20 09:30</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button></td>
           <td class="readonly-cell updated-cell">08/20 09:30</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('김정훈')">기기보기</button></td>
-        </tr>
-        <tr class="row-resigned">
+        </tr><tr class="row-resigned">
           <td contenteditable="true" class="link-cell">이상왕</td>
           <td><select class="cell-select"><option>사원</option><option>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option selected>이사</option><option>상무</option><option>전무</option><option>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="시공" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">시공</span></td>
-          <td contenteditable="true">swlee@daewoonenc.com</td>
+          <td contenteditable="true">swlee@gmail.com</td>
           <td contenteditable="true">010-4805-9257</td>
-          <td><select class="cell-select"><option>재직</option><option selected>퇴사</option></select></td>
+          <td contenteditable="true">01048059257</td><td><select class="cell-select"><option>재직</option><option selected>퇴사</option></select></td>
           <td class="readonly-cell">08/10 11:00</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button></td>
           <td class="readonly-cell updated-cell">08/10 11:00</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" disabled>-</button></td>
-        </tr>
-        <tr>
+        </tr><tr>
           <td contenteditable="true" class="link-cell">김상철</td>
           <td><select class="cell-select"><option>사원</option><option>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option selected>전무</option><option>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="실사,영업" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">실사</span><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">영업</span></td>
-          <td contenteditable="true">sckim@daewoonenc.com</td>
+          <td contenteditable="true">sckim@gmail.com</td>
           <td contenteditable="true">010-6295-8815</td>
-          <td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
+          <td contenteditable="true">01062958815</td><td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
           <td class="readonly-cell">08/21 14:15</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button></td>
           <td class="readonly-cell updated-cell">08/21 14:15</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('김상철')">기기보기</button></td>
-        </tr>
-        <tr>
+        </tr><tr>
           <td contenteditable="true" class="link-cell">장기영</td>
           <td><select class="cell-select"><option>사원</option><option>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option selected>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="설계,행정" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">설계</span><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">행정</span></td>
-          <td contenteditable="true">gyjang@daewoonenc.com</td>
+          <td contenteditable="true">gyjang@gmail.com</td>
           <td contenteditable="true">010-8232-9968</td>
-          <td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
+          <td contenteditable="true">01082329968</td><td><select class="cell-select"><option selected>재직</option><option>퇴사</option></select></td>
           <td class="readonly-cell">08/19 16:40</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button></td>
           <td class="readonly-cell updated-cell">08/19 16:40</td>
           <td><button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('장기영')">기기보기</button></td>
-        </tr>
-        <tr class="row-resigned">
+        </tr><tr class="row-resigned">
           <td contenteditable="true" class="link-cell">정지학</td>
           <td><select class="cell-select"><option>사원</option><option>주임</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option><option>상무</option><option>전무</option><option selected>부사장</option><option>대표</option><option>회장</option></select></td>
           <td class="role-cell" data-roles="영업" onclick="openRoleEditor(this)" style="cursor:pointer;"><span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">영업</span></td>
-          <td contenteditable="true">jhjeong@daewoonenc.com</td>
+          <td contenteditable="true">jhjeong@gmail.com</td>
           <td contenteditable="true">010-8227-1295</td>
-          <td><select class="cell-select"><option>재직</option><option selected>퇴사</option></select></td>
+          <td contenteditable="true">01082271295</td><td><select class="cell-select"><option>재직</option><option selected>퇴사</option></select></td>
           <td class="readonly-cell">08/05 10:00</td>
           <td><select class="cell-select"><option selected>정상</option><option>잠금</option></select></td>
           <td><button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button></td>
@@ -1881,12 +1870,11 @@
   populateSalesRepSelects();
   populateRoleLinkedSelects();
   populateFreelancerSelects();
-  populateLoginUserSelect();
 
   setupInlineFilters('grid-users', 'users-filters', [
     { label: '직위', getFn: tr => { const s = tr.children[1].querySelector('select'); return s ? s.value : ''; } },
     { label: '시스템역할', getFn: tr => { const rc = tr.querySelector('.role-cell'); return rc ? (rc.dataset.roles||'').split(',').filter(Boolean) : []; } },
-    { label: '근무여부', getFn: tr => { const s = tr.children[5].querySelector('select'); return s ? s.value : ''; } },
+    { label: '근무여부', getFn: tr => { const s = tr.children[6].querySelector('select'); return s ? s.value : ''; } },
   ]);
   setupInlineFilters('grid-freelancers', 'freelancers-filters', [
     { label: '활동지역', getFn: tr => tr.children[2] ? tr.children[2].textContent.trim() : '' },
@@ -1999,14 +1987,14 @@
     table.querySelectorAll('tr').forEach(tr=>{
       if(tr.querySelector('th')) return;
       const cells = tr.children;
-      // required: 0=성명 3=이메일 4=전화번호 (text) / 1=직위 5=근무여부 (select) / 2=시스템역할 (role-cell)
-      [0,3,4].forEach(i=>{
+      // required: 0=성명 3=이메일 4=전화번호 5=비밀번호 (text) / 1=직위 6=근무여부 (select) / 2=시스템역할 (role-cell)
+      [0,3,4,5].forEach(i=>{
         const td = cells[i];
         const empty = !td.textContent.trim();
         td.classList.toggle('cell-invalid', empty);
         if(empty){ allValid = false; if(!firstInvalid) firstInvalid = td; }
       });
-      [1,5].forEach(i=>{
+      [1,6].forEach(i=>{
         const td = cells[i];
         const sel = td.querySelector('select');
         const empty = !sel || !sel.value;
@@ -2076,6 +2064,7 @@
       <td class="role-cell" data-roles="" onclick="openRoleEditor(this)" style="cursor:pointer;color:var(--slate);font-size:11px;">역할 선택</td>
       <td contenteditable="true"></td>
       <td contenteditable="true"></td>
+      <td contenteditable="true"></td>
       <td><select class="cell-select"><option>재직</option><option>퇴사</option></select></td>
       <td class="readonly-cell">-</td>
       <td><select class="cell-select"><option>정상</option><option>잠금</option></select></td>
@@ -2087,7 +2076,7 @@
     refreshInlineFilters('grid-users', 'users-filters', [
       { label: '직위', getFn: r => { const s = r.children[1].querySelector('select'); return s ? s.value : ''; } },
       { label: '시스템역할', getFn: r => { const rc = r.querySelector('.role-cell'); return rc ? (rc.dataset.roles||'').split(',').filter(Boolean) : []; } },
-      { label: '근무여부', getFn: r => { const s = r.children[5].querySelector('select'); return s ? s.value : ''; } },
+      { label: '근무여부', getFn: r => { const s = r.children[6].querySelector('select'); return s ? s.value : ''; } },
     ]);
     document.getElementById('save-users').disabled = false;
     document.getElementById('cancel-users').disabled = false;
@@ -2646,30 +2635,29 @@
     setTimeout(()=>selectProgressProject(id, name), 50);
   }
   // ---- 데모: 로그인 사용자 전환 (권한별 화면 분리 시연용) ----
-  function populateLoginUserSelect(){
-    const sel = document.getElementById('demo-login-user');
-    if(!sel) return;
-    const names = [];
-    document.querySelectorAll('#grid-users tr').forEach(tr=>{
-      if(tr.querySelector('th')) return;
-      const nameCell = tr.children[0];
-      const roleCell = tr.querySelector('.role-cell');
-      const statusSel = tr.children[5] ? tr.children[5].querySelector('select') : null;
-      const status = statusSel ? statusSel.value : '재직';
-      if(status === '퇴사') return; // 퇴직자는 로그인 대상에서 제외
-      if(nameCell && nameCell.textContent.trim()){
-        names.push({ name: nameCell.textContent.trim(), roles: roleCell ? (roleCell.dataset.roles||'').split(',') : [] });
-      }
-    });
-    sel.innerHTML = names.map(n=>`<option value="${n.name}">${n.name} (${n.roles.join(',')})</option>`).join('');
-  }
   function doLogin(){
-    const sel = document.getElementById('demo-login-user');
-    const name = sel ? sel.value : '';
-    const row = Array.from(document.querySelectorAll('#grid-users tr')).find(tr=>tr.children[0] && tr.children[0].textContent.trim()===name);
-    const roleCell = row ? row.querySelector('.role-cell') : null;
+    const email = (document.getElementById('login-email').value || '').trim().toLowerCase();
+    const pw = (document.getElementById('login-password').value || '').trim();
+    const errEl = document.getElementById('login-error');
+    const row = Array.from(document.querySelectorAll('#grid-users tr')).find(tr=>{
+      if(tr.querySelector('th')) return false;
+      const emailCell = tr.children[3];
+      const pwCell = tr.children[5];
+      const statusSel = tr.children[6] ? tr.children[6].querySelector('select') : null;
+      const status = statusSel ? statusSel.value : '재직';
+      const rowEmail = emailCell ? emailCell.textContent.trim().toLowerCase() : '';
+      const rowPw = pwCell ? pwCell.textContent.trim() : '';
+      return rowEmail === email && rowPw === pw && status === '재직';
+    });
+    if(!row){
+      if(errEl) errEl.style.display = 'block';
+      return;
+    }
+    if(errEl) errEl.style.display = 'none';
+    const name = row.children[0].textContent.trim();
+    const roleCell = row.querySelector('.role-cell');
     const roles = roleCell ? (roleCell.dataset.roles||'').split(',') : [];
-    const posSel = row ? row.children[1].querySelector('select') : null;
+    const posSel = row.children[1].querySelector('select');
     const position = posSel ? posSel.value : '';
     CURRENT_LOGIN_USER = { name, roles, position };
     renderSidebars();
