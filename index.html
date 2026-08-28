@@ -1718,6 +1718,7 @@
     if(target === 'bizdash') renderBizDashboard();
     if(target === 'customers') syncCustomerStatusCells();
     if(target === 'users') loadUsersFromSupabase();
+    if(target === 'customers') loadCustomersFromSupabase();
     if(target === 'mobile') syncFieldMobileUser();
     if(target === 'dashboard' && PRE_PROJECTS.length){ syncAllPreRows(); selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name); updatePreTotalCount(); }
     if(target === 'progress' && PROG_PROJECTS.length){ syncAllProgRows(); selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name); updateProgTotalCount(); }
@@ -2020,6 +2021,76 @@
     }
   }
 
+  // ---- 고객관리: Supabase 실데이터 로드/저장 ----
+  function renderCustomerRowHtml(c){
+    const updated = c.updated_at ? new Date(c.updated_at).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    return `<tr data-id="${c.id}">
+          <td contenteditable="true" class="link-cell">${c.company_name}</td>
+          <td contenteditable="true">${c.ceo_name||''}</td>
+          <td contenteditable="true">${c.ceo_phone||''}</td>
+          <td contenteditable="true">${c.contact_name||''}</td>
+          <td contenteditable="true">${c.contact_phone||''}</td>
+          <td contenteditable="true">${c.address||''}</td>
+          <td><select class="cell-select freelancer-select" data-value="${c.freelancer_name||''}"></select></td>
+          <td><select class="cell-select sales-rep-select" data-value="${c.sales_rep||''}"></select></td>
+          <td><span class="badge ok">-</span></td>
+          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
+          <td class="note-cell${c.note?'':' note-empty'}" onclick="openNoteEditor(this)">${c.note||''}</td>
+          <td class="readonly-cell updated-cell">${updated}</td>
+        </tr>`;
+  }
+  async function loadCustomersFromSupabase(){
+    if(!sb) return false;
+    try {
+      const { data, error } = await sb.from('customers').select('*').order('company_name');
+      if(error || !data || !data.length) return false;
+      const table = document.getElementById('grid-customers');
+      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
+      data.forEach(c => { table.insertAdjacentHTML('beforeend', renderCustomerRowHtml(c)); });
+      populateFreelancerSelects();
+      populateSalesRepSelects();
+      syncCustomerStatusCells();
+      snapshotGrid('customers');
+      return true;
+    } catch(e){
+      console.warn('고객 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
+      return false;
+    }
+  }
+  async function saveCustomersToSupabase(){
+    if(!sb) return;
+    const rows = document.querySelectorAll('#grid-customers tr');
+    for(const tr of rows){
+      if(tr.querySelector('th')) continue;
+      const freelancerSel = tr.querySelector('.freelancer-select');
+      const salesSel = tr.querySelector('.sales-rep-select');
+      const noteCell = tr.querySelector('.note-cell');
+      const record = {
+        company_name: tr.children[0].textContent.trim(),
+        ceo_name: tr.children[1].textContent.trim(),
+        ceo_phone: tr.children[2].textContent.trim(),
+        contact_name: tr.children[3].textContent.trim(),
+        contact_phone: tr.children[4].textContent.trim(),
+        address: tr.children[5].textContent.trim(),
+        freelancer_name: freelancerSel ? freelancerSel.value : '',
+        sales_rep: salesSel ? salesSel.value : '',
+        note: noteCell ? noteCell.textContent.trim() : '',
+        updated_at: new Date().toISOString(),
+      };
+      const existingId = tr.dataset.id;
+      try {
+        if(existingId){
+          await sb.from('customers').update(record).eq('id', existingId);
+        } else {
+          const { data } = await sb.from('customers').insert(record).select('id').single();
+          if(data) tr.dataset.id = data.id;
+        }
+      } catch(e){
+        console.warn('고객 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
+      }
+    }
+  }
+
   // ---- dirty-state save/cancel buttons ----
   function armSaveButton(gridId, btnId, cancelBtnId){
     const grid = document.getElementById(gridId);
@@ -2065,6 +2136,7 @@
       saveUsersToSupabase(); // 실제 DB에 반영 (백그라운드)
     }
     if(which === 'customers'){
+      saveCustomersToSupabase(); // 실제 DB에 반영 (백그라운드)
       const custRows = document.querySelectorAll('#grid-customers tr');
       const lastRow = custRows[custRows.length - 1];
       const customerName = lastRow ? lastRow.children[0].textContent.trim() : '';
@@ -2206,7 +2278,6 @@
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td contenteditable="true" class="link-cell"></td>
-      <td contenteditable="true"></td>
       <td contenteditable="true"></td>
       <td contenteditable="true"></td>
       <td contenteditable="true"></td>
