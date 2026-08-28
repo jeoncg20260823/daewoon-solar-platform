@@ -335,7 +335,7 @@
   <button data-target="mobile" data-navpos="4">③ 현장 모바일</button>
   <button data-target="closing" data-navpos="5">④ 종료 인사화면</button>
   <button onclick="openMobilePreview()" style="border-color:var(--amber);color:var(--amber);">📱 모바일 화면 미리보기</button>
-  <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:11px;padding:6px 10px;">v53</span>
+  <span id="version-label" style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:11px;padding:6px 10px;">v53</span>
 </div>
 
 <!-- ============ 1. WELCOME ============ -->
@@ -1624,6 +1624,29 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+  const CURRENT_VERSION = 'v53'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  async function checkAppVersion(){
+    if(!sb) return;
+    try {
+      const { data, error } = await sb.from('app_settings').select('value').eq('key', 'current_version').maybeSingle();
+      if(error || !data) return;
+      if(data.value && data.value !== CURRENT_VERSION){
+        showNewVersionBanner(data.value);
+      }
+    } catch(e){
+      console.warn('버전 확인 실패(무시 가능):', e);
+    }
+  }
+  function showNewVersionBanner(newVersion){
+    if(document.getElementById('new-version-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'new-version-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--amber);color:var(--navy);padding:12px 16px;text-align:center;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+    banner.innerHTML = `새 버전(${newVersion})이 있습니다. 화면이 최신 상태가 아닐 수 있어요. <button onclick="location.reload(true)" style="margin-left:10px;padding:6px 14px;border-radius:999px;border:none;background:var(--navy);color:#fff;font-weight:700;cursor:pointer;">지금 새로고침</button>`;
+    document.body.prepend(banner);
+  }
+  checkAppVersion();
+  { const vl = document.getElementById('version-label'); if(vl) vl.textContent = CURRENT_VERSION; }
   // ---- shared sidebar component ----
   const SIDEBAR_ITEMS = [
     { group:'경영 현황', items:[
