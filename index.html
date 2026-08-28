@@ -1624,7 +1624,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v58'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v59'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2137,15 +2137,16 @@
     }
     if(which === 'customers'){
       saveCustomersToSupabase(); // 실제 DB에 반영 (백그라운드)
-      const custRows = document.querySelectorAll('#grid-customers tr');
-      const lastRow = custRows[custRows.length - 1];
-      const customerName = lastRow ? lastRow.children[0].textContent.trim() : '';
-      window._pendingCustomerRow = lastRow;
-      if(lastRow){
-        const statusCell = lastRow.children[8];
+      // 신규 등록된 고객(방금 "+ 고객 추가"로 만든, 아직 DB id가 없는 행)에만 공정생성 여부를 묻는다
+      const newRow = document.querySelector('#grid-customers tr[data-is-new="1"]:not([data-id])');
+      if(newRow){
+        newRow.removeAttribute('data-is-new');
+        const customerName = newRow.children[0].textContent.trim();
+        window._pendingCustomerRow = newRow;
+        const statusCell = newRow.children[8];
         statusCell.innerHTML = `<button class="btn-mini" style="background:var(--amber);color:var(--navy);" onclick="reopenProcessModalForCustomer(this)">+ 공정 생성</button>`;
+        setTimeout(()=>{ showCustomerSavedPrompt(customerName); }, 300);
       }
-      setTimeout(()=>{ showCustomerSavedPrompt(customerName); }, 300);
     }
   }
 
@@ -2276,6 +2277,7 @@
   function addCustomerRow(){
     const table = document.getElementById('grid-customers');
     const tr = document.createElement('tr');
+    tr.dataset.isNew = '1';
     tr.innerHTML = `
       <td contenteditable="true" class="link-cell"></td>
       <td contenteditable="true"></td>
