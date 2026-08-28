@@ -1194,7 +1194,7 @@
     <div class="grid-wrap">
       <table class="editgrid" id="grid-holds">
         <tr><th>사전프로젝트번호</th><th>진행프로젝트번호</th><th>고객사명</th><th>영업프리랜서</th><th>영업담당</th><th>발생일자</th><th>보류취소사유</th><th>보고서</th><th>검토확정</th><th>확정일시</th><th>업데이트일시</th></tr>
-        <tr>
+        <tr data-confirmed-at="2026-08-18T09:20:00.000Z">
           <td class="mono link-cell" onclick="go('dashboard');selectPreProject('PJ-2026-0205','화영')">PJ-2026-0205</td>
           <td class="mono" style="color:var(--slate);">-</td>
           <td class="readonly-cell" style="background:var(--paper);" title="REF">화영</td>
@@ -1207,7 +1207,7 @@
           <td class="readonly-cell hold-confirm-date">2026-08-18 09:20</td>
           <td class="readonly-cell updated-cell">08/18 09:20</td>
         </tr>
-        <tr>
+        <tr data-confirmed-at="2026-08-21T10:00:00.000Z">
           <td class="mono" style="color:var(--slate);">-</td>
           <td class="mono link-cell" onclick="go('progress');selectProgressProject('PJ-2026-0135','청호산업')">PJ-2026-0135</td>
           <td class="readonly-cell" style="background:var(--paper);" title="REF">청호산업</td>
@@ -1624,7 +1624,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v63'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v65'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1725,6 +1725,9 @@
     if(target === 'dashboard') loadPreProjectsFromSupabase();
     if(target === 'progress' && PROG_PROJECTS.length){ syncAllProgRows(); selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name); updateProgTotalCount(); }
     if(target === 'progress') loadProgProjectsFromSupabase();
+    if(target === 'holds') loadHoldsFromSupabase();
+    if(target === 'forms' || target === 'formsview') loadFormsFromSupabase();
+    if(target === 'docs') loadDocumentsFromSupabase();
   }
   document.querySelectorAll('.demo-nav button').forEach(b=>{
     if(b.dataset.target) b.addEventListener('click', ()=>go(b.dataset.target));
@@ -2399,6 +2402,173 @@
     }
   }
 
+  // ---- 취소보류관리: Supabase 실데이터 로드/저장 ----
+  function renderHoldRowHtml(h){
+    const updated = h.updated_at ? new Date(h.updated_at).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    const confirmedAt = h.confirmed_at ? new Date(h.confirmed_at).toLocaleString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    const preNo = h.pre_project_no || '-';
+    const progNo = h.prog_project_no || '-';
+    const preOnclick = preNo !== '-' ? `go('dashboard');selectPreProject('${preNo}','${(h.company_name||'').replace(/'/g,"\\'")}')` : '';
+    const progOnclick = progNo !== '-' ? `go('progress');selectProgressProject('${progNo}','${(h.company_name||'').replace(/'/g,"\\'")}')` : '';
+    const preCell = preNo !== '-' ? `<td class="mono link-cell" onclick="${preOnclick}">${preNo}</td>` : `<td class="mono" style="color:var(--slate);">-</td>`;
+    const progCell = progNo !== '-' ? `<td class="mono link-cell" onclick="${progOnclick}">${progNo}</td>` : `<td class="mono" style="color:var(--slate);">-</td>`;
+    const attachLabel = h.attachment_name ? `첨부보기 (1)` : `첨부보기 (0)`;
+    return `<tr data-id="${h.id}" data-confirmed-at="${h.confirmed_at||''}">
+          ${preCell}
+          ${progCell}
+          <td class="readonly-cell" style="background:var(--paper);" title="REF">${h.company_name||''}</td>
+          <td contenteditable="true">${h.freelancer_name||''}</td>
+          <td contenteditable="true">${h.sales_rep||''}</td>
+          <td contenteditable="true">${h.occurred_date||''}</td>
+          <td contenteditable="true">${h.reason||''}</td>
+          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);" onclick="attachDemoFile(this)" data-files='${h.attachment_name?JSON.stringify([h.attachment_name]):'[]'}'>${attachLabel}</button></td>
+          <td><select class="cell-select" data-prev="${h.confirm_status||'대기'}" onchange="handleHoldConfirm(this)"><option${h.confirm_status!=='확정완료'?' selected':''}>대기</option><option${h.confirm_status==='확정완료'?' selected':''}>확정완료</option></select></td>
+          <td class="readonly-cell hold-confirm-date">${confirmedAt}</td>
+          <td class="readonly-cell updated-cell">${updated}</td>
+        </tr>`;
+  }
+  async function loadHoldsFromSupabase(){
+    if(!sb) return false;
+    try {
+      const { data, error } = await sb.from('hold_cancel_requests').select('*').order('occurred_date', {ascending:false});
+      if(error || !data || !data.length) return false;
+      const table = document.getElementById('grid-holds');
+      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
+      data.forEach(h => { table.insertAdjacentHTML('beforeend', renderHoldRowHtml(h)); });
+      document.querySelectorAll('#grid-holds tr').forEach(tr=>{
+        if(tr.querySelector('th')) return;
+        applyHoldRowLockState(tr);
+      });
+      snapshotGrid('holds');
+      return true;
+    } catch(e){
+      console.warn('취소보류 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
+      return false;
+    }
+  }
+  async function saveHoldsToSupabase(){
+    if(!sb) return;
+    const rows = document.querySelectorAll('#grid-holds tr');
+    for(const tr of rows){
+      if(tr.querySelector('th')) continue;
+      const cells = tr.children;
+      const preCell = cells[0].classList.contains('link-cell') ? cells[0].textContent.trim() : null;
+      const progCell = cells[1].classList.contains('link-cell') ? cells[1].textContent.trim() : null;
+      const confirmSel = cells[8].querySelector('select');
+      const record = {
+        pre_project_no: preCell,
+        prog_project_no: progCell,
+        company_name: cells[2].textContent.trim(),
+        freelancer_name: cells[3].textContent.trim(),
+        sales_rep: cells[4].textContent.trim(),
+        occurred_date: cells[5].textContent.trim() || null,
+        reason: cells[6].textContent.trim(),
+        confirm_status: confirmSel ? confirmSel.value : '대기',
+        confirmed_at: tr.dataset.confirmedAt || null,
+        updated_at: new Date().toISOString(),
+      };
+      const existingId = tr.dataset.id;
+      try {
+        if(existingId){
+          await sb.from('hold_cancel_requests').update(record).eq('id', existingId);
+        } else {
+          const { data } = await sb.from('hold_cancel_requests').insert(record).select('id').single();
+          if(data) tr.dataset.id = data.id;
+        }
+      } catch(e){
+        console.warn('취소보류 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
+      }
+    }
+  }
+
+  // ---- 양식관리 / 양식조회: Supabase 실데이터 로드 (읽기전용 참고자료 목록) ----
+  async function loadFormsFromSupabase(){
+    if(!sb) return false;
+    try {
+      const { data, error } = await sb.from('forms').select('*').order('form_code');
+      if(error || !data || !data.length) return false;
+
+      const gridTable = document.getElementById('grid-forms');
+      gridTable.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
+      data.forEach(f => {
+        const updated = f.updated_at ? new Date(f.updated_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+        gridTable.insertAdjacentHTML('beforeend', `<tr>
+          <td class="mono">${f.form_code||''}</td>
+          <td>${f.form_type||''}</td>
+          <td>${f.form_name||''}</td>
+          <td>${f.version||''}</td>
+          <td>${f.registered_date||''}</td>
+          <td>${f.author||''}</td>
+          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
+          <td class="note-cell${f.note?'':' note-empty'}" onclick="openNoteEditor(this)">${f.note||''}</td>
+          <td class="readonly-cell updated-cell">${updated}</td>
+        </tr>`);
+      });
+
+      const listEl = document.getElementById('formsview-list');
+      listEl.innerHTML = '';
+      data.forEach(f => {
+        listEl.insertAdjacentHTML('beforeend', `<div class="list-card" data-classification="${f.form_type||''}" data-date="${f.registered_date||''}">
+          <div><div class="list-card-title">${f.form_name||''} (${f.form_code||''})</div><div class="list-card-sub">${f.version||''} · ${f.registered_date||''} 등록</div></div>
+          <button class="btn-dl">다운로드</button>
+        </div>`);
+      });
+
+      const classSel = document.querySelector('#formsview-filters .doc-filter-fv[data-attr="classification"]');
+      if(classSel){
+        classSel.querySelectorAll('option:not(:first-child)').forEach(o=>o.remove());
+        const values = [...new Set(data.map(f=>f.form_type).filter(Boolean))];
+        values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; classSel.appendChild(o); });
+      }
+      if(typeof applyFormsviewFilters === 'function') applyFormsviewFilters();
+      return true;
+    } catch(e){
+      console.warn('양식 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
+      return false;
+    }
+  }
+
+  // ---- 자료조회: Supabase 실데이터 로드 (읽기전용 참고자료 목록) ----
+  async function loadDocumentsFromSupabase(){
+    if(!sb) return false;
+    try {
+      const { data, error } = await sb.from('documents').select('*').order('written_date', {ascending:false});
+      if(error || !data || !data.length) return false;
+
+      const listEl = document.getElementById('docs-list');
+      listEl.innerHTML = '';
+      data.forEach(d => {
+        const projectNo = d.project_type === 'prog' ? d.prog_project_no : d.pre_project_no;
+        listEl.insertAdjacentHTML('beforeend', `<div class="list-card" data-classification="${d.doc_category||''}" data-project="${projectNo||''}" data-projecttype="${d.project_type||''}" data-author="${d.author||''}" data-customer="${d.customer_name||''}" data-date="${d.written_date||''}">
+          <div><div class="list-card-title">${d.title||d.doc_category||''} — ${projectNo||''}</div><div class="list-card-sub">문서분류: ${d.doc_category||''} · 연결공정: ${d.linked_step||''} · 작성자: ${d.author||''} · ${d.written_date||''}</div></div>
+          <button class="btn-dl">다운로드</button>
+        </div>`);
+      });
+
+      document.querySelectorAll('#docs-filters .doc-filter').forEach(sel=>{
+        const attr = sel.dataset.attr;
+        sel.querySelectorAll('option:not(:first-child)').forEach(o=>o.remove());
+        const values = [...new Set(data.map(d => attr==='classification' ? d.doc_category : attr==='author' ? d.author : attr==='customer' ? d.customer_name : '').filter(Boolean))];
+        values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+      });
+      const preSel = document.querySelector('.doc-filter-pre');
+      const progSel = document.querySelector('.doc-filter-prog');
+      if(preSel){
+        preSel.querySelectorAll('option:not(:first-child)').forEach(o=>o.remove());
+        [...new Set(data.filter(d=>d.project_type==='pre').map(d=>d.pre_project_no))].forEach(id=>{ const o=document.createElement('option'); o.value=id; o.textContent=id; preSel.appendChild(o); });
+      }
+      if(progSel){
+        progSel.querySelectorAll('option:not(:first-child)').forEach(o=>o.remove());
+        [...new Set(data.filter(d=>d.project_type==='prog').map(d=>d.prog_project_no))].forEach(id=>{ const o=document.createElement('option'); o.value=id; o.textContent=id; progSel.appendChild(o); });
+      }
+      if(typeof applyDocFilters === 'function') applyDocFilters('docs-list', '#docs-filters .doc-filter');
+      return true;
+    } catch(e){
+      console.warn('자료 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
+      return false;
+    }
+  }
+
   // ---- dirty-state save/cancel buttons ----
   function armSaveButton(gridId, btnId, cancelBtnId){
     const grid = document.getElementById(gridId);
@@ -2464,6 +2634,9 @@
     }
     if(which === 'progress'){
       saveProgProjectInfoToSupabase(); // 실제 DB에 반영 (백그라운드)
+    }
+    if(which === 'holds'){
+      saveHoldsToSupabase(); // 실제 DB에 반영 (백그라운드)
     }
   }
 
@@ -4027,8 +4200,11 @@
     if(sel){
       sel.dataset.prev = direction;
       const row = sel.closest('tr');
-      row.querySelector('.hold-confirm-date').textContent = direction === '확정완료' ? nowStamp() : '-';
+      const isConfirming = direction === '확정완료';
+      row.querySelector('.hold-confirm-date').textContent = isConfirming ? nowStamp() : '-';
+      row.dataset.confirmedAt = isConfirming ? new Date().toISOString() : '';
       applyHoldRowLockState(row);
+      saveHoldsToSupabase(); // 실제 DB에 반영 (백그라운드)
     }
     closeModal();
   }
