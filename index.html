@@ -1811,6 +1811,7 @@
     const cell = window._pendingRoleCell;
     cell.dataset.roles = checked.join(',');
     cell.innerHTML = checked.map(r=>`<span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">${r}</span>`).join('');
+    cell.dispatchEvent(new Event('change', { bubbles: true })); // 상단 저장 버튼 활성화 신호
     closeModal();
     populateRoleLinkedSelects();
   }
@@ -2575,6 +2576,7 @@
     if(window._pendingNoteCell){
       window._pendingNoteCell.textContent = val;
       window._pendingNoteCell.classList.toggle('note-empty', !val);
+      window._pendingNoteCell.dispatchEvent(new Event('input', { bubbles: true })); // 상단 저장 버튼 활성화 신호
     }
     closeModal();
   }
@@ -3638,6 +3640,7 @@
     btn.dataset.pinSet = '1';
     btn.textContent = '설정됨';
     btn.style.background = 'var(--success)';
+    btn.dispatchEvent(new Event('change', { bubbles: true })); // 상단 저장 버튼 활성화 신호
     closeModal();
   }
 
