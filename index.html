@@ -1624,7 +1624,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v60'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v61'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1719,6 +1719,7 @@
     if(target === 'customers') syncCustomerStatusCells();
     if(target === 'users') loadUsersFromSupabase();
     if(target === 'customers') loadCustomersFromSupabase();
+    if(target === 'freelancers') loadFreelancersFromSupabase();
     if(target === 'mobile') syncFieldMobileUser();
     if(target === 'dashboard' && PRE_PROJECTS.length){ syncAllPreRows(); selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name); updatePreTotalCount(); }
     if(target === 'progress' && PROG_PROJECTS.length){ syncAllProgRows(); selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name); updateProgTotalCount(); }
@@ -2091,6 +2092,73 @@
     }
   }
 
+  // ---- 영업프리랜서관리: Supabase 실데이터 로드/저장 ----
+  function renderFreelancerRowHtml(f){
+    const levelOpts = ['A','B','C','D','N'].map(o=>`<option${o===f.level?' selected':''}>${o}</option>`).join('');
+    const statusOpts = `<option${f.status!=='은퇴'?' selected':''}>활동중</option><option${f.status==='은퇴'?' selected':''}>은퇴</option>`;
+    const updated = f.updated_at ? new Date(f.updated_at).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    const cls = f.status==='은퇴' ? ' class="row-resigned"' : '';
+    return `<tr${cls} data-id="${f.id}">
+          <td contenteditable="true" class="link-cell" onclick="goToPersonProjects('${(f.name||'').replace(/'/g,"\\'")}')">${f.name}</td>
+          <td contenteditable="true">${f.phone||''}</td>
+          <td contenteditable="true">${f.area||''}</td>
+          <td><select class="cell-select">${levelOpts}</select></td>
+          <td><select class="cell-select" onchange="this.closest('tr').classList.toggle('row-resigned', this.value==='은퇴')">${statusOpts}</select></td>
+          <td contenteditable="true">${f.email||''}</td>
+          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
+          <td class="note-cell${f.note?'':' note-empty'}" onclick="openNoteEditor(this)">${f.note||''}</td>
+          <td class="readonly-cell updated-cell">${updated}</td>
+        </tr>`;
+  }
+  async function loadFreelancersFromSupabase(){
+    if(!sb) return false;
+    try {
+      const { data, error } = await sb.from('freelancers').select('*').order('name');
+      if(error || !data || !data.length) return false;
+      const table = document.getElementById('grid-freelancers');
+      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
+      data.forEach(f => { table.insertAdjacentHTML('beforeend', renderFreelancerRowHtml(f)); });
+      snapshotGrid('freelancers');
+      return true;
+    } catch(e){
+      console.warn('영업프리랜서 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
+      return false;
+    }
+  }
+  async function saveFreelancersToSupabase(){
+    if(!sb) return;
+    const rows = document.querySelectorAll('#grid-freelancers tr');
+    for(const tr of rows){
+      if(tr.querySelector('th')) continue;
+      const selects = tr.querySelectorAll('select');
+      const levelSel = selects[0];
+      const statusSel = selects[1];
+      const noteCell = tr.querySelector('.note-cell');
+      const record = {
+        name: tr.children[0].textContent.trim(),
+        phone: tr.children[1].textContent.trim(),
+        area: tr.children[2].textContent.trim(),
+        level: levelSel ? levelSel.value : '',
+        status: statusSel ? statusSel.value : '활동중',
+        email: tr.children[5].textContent.trim(),
+        note: noteCell ? noteCell.textContent.trim() : '',
+        updated_at: new Date().toISOString(),
+      };
+      const existingId = tr.dataset.id;
+      try {
+        if(existingId){
+          await sb.from('freelancers').update(record).eq('id', existingId);
+        } else {
+          const { data } = await sb.from('freelancers').insert(record).select('id').single();
+          if(data) tr.dataset.id = data.id;
+        }
+      } catch(e){
+        console.warn('영업프리랜서 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
+      }
+    }
+    populateFreelancerSelects();
+  }
+
   // ---- dirty-state save/cancel buttons ----
   function armSaveButton(gridId, btnId, cancelBtnId){
     const grid = document.getElementById(gridId);
@@ -2147,6 +2215,9 @@
         statusCell.innerHTML = `<button class="btn-mini" style="background:var(--amber);color:var(--navy);" onclick="reopenProcessModalForCustomer(this)">+ 공정 생성</button>`;
         setTimeout(()=>{ showCustomerSavedPrompt(customerName); }, 300);
       }
+    }
+    if(which === 'freelancers'){
+      saveFreelancersToSupabase(); // 실제 DB에 반영 (백그라운드)
     }
   }
 
