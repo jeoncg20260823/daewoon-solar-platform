@@ -1693,6 +1693,7 @@
     });
     if(target === 'bizdash') renderBizDashboard();
     if(target === 'customers') syncCustomerStatusCells();
+    if(target === 'users') loadUsersFromSupabase();
     if(target === 'mobile') syncFieldMobileUser();
     if(target === 'dashboard' && PRE_PROJECTS.length){ syncAllPreRows(); selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name); updatePreTotalCount(); }
     if(target === 'progress' && PROG_PROJECTS.length){ syncAllProgRows(); selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name); updateProgTotalCount(); }
@@ -1910,6 +1911,90 @@
   }
   bindRowStatusSelects();
 
+  // ---- 사용자관리: Supabase 실데이터 로드/저장 (2단계) ----
+  const POSITION_OPTIONS = ['사원','주임','대리','과장','차장','부장','이사','상무','전무','부사장','대표','회장'];
+  function renderUserRowHtml(u){
+    const posOpts = POSITION_OPTIONS.map(o=>`<option${o===u.position?' selected':''}>${o}</option>`).join('');
+    const roles = (u.system_roles||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const roleChips = roles.map(r=>`<span style="display:inline-block;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:2px 7px;font-size:11px;margin:1px;">${r}</span>`).join('');
+    const statusSel = `<option${u.employment_status==='재직'?' selected':''}>재직</option><option${u.employment_status==='퇴사'?' selected':''}>퇴사</option>`;
+    const lockSel = `<option${!u.account_locked?' selected':''}>정상</option><option${u.account_locked?' selected':''}>잠금</option>`;
+    const pinSet = !!u.approval_pin;
+    const pinBtn = pinSet
+      ? `<button class="btn-mini pin-btn" style="background:var(--success);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="1">설정됨</button>`
+      : `<button class="btn-mini pin-btn" style="background:var(--navy-3);font-size:10.5px;" onclick="openPinEditor(this)" data-pin-set="0">미설정</button>`;
+    const updated = u.updated_at ? new Date(u.updated_at).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    const cls = u.employment_status==='퇴사' ? ' class="row-resigned"' : '';
+    const deviceBtn = u.employment_status==='퇴사'
+      ? `<button class="btn-mini" style="background:var(--navy-3);" disabled>-</button>`
+      : `<button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('${u.name}')">기기보기</button>`;
+    return `<tr${cls} data-id="${u.id}">
+          <td contenteditable="true" class="link-cell">${u.name}</td>
+          <td><select class="cell-select">${posOpts}</select></td>
+          <td class="role-cell" data-roles="${roles.join(',')}" onclick="openRoleEditor(this)" style="cursor:pointer;">${roleChips}</td>
+          <td contenteditable="true">${u.email}</td>
+          <td contenteditable="true">${u.phone||''}</td>
+          <td contenteditable="true">${u.password||''}</td>
+          <td><select class="cell-select">${statusSel}</select></td>
+          <td class="readonly-cell">${u.last_login ? new Date(u.last_login).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-'}</td>
+          <td><select class="cell-select">${lockSel}</select></td>
+          <td>${pinBtn}</td>
+          <td class="readonly-cell updated-cell">${updated}</td>
+          <td>${deviceBtn}</td>
+        </tr>`;
+  }
+  async function loadUsersFromSupabase(){
+    if(!sb) return false;
+    try {
+      const { data, error } = await sb.from('users').select('*').order('name');
+      if(error || !data || !data.length) return false;
+      const table = document.getElementById('grid-users');
+      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
+      data.forEach(u => { table.insertAdjacentHTML('beforeend', renderUserRowHtml(u)); });
+      bindRowStatusSelects();
+      snapshotGrid('users');
+      return true;
+    } catch(e){
+      console.warn('사용자 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
+      return false;
+    }
+  }
+  async function saveUsersToSupabase(){
+    if(!sb) return;
+    const rows = document.querySelectorAll('#grid-users tr');
+    for(const tr of rows){
+      if(tr.querySelector('th')) continue;
+      const posSel = tr.children[1].querySelector('select');
+      const roleCell = tr.querySelector('.role-cell');
+      const statusSel = tr.children[6].querySelector('select');
+      const lockSel = tr.children[8].querySelector('select');
+      const pinBtn = tr.querySelector('.pin-btn');
+      const record = {
+        name: tr.children[0].textContent.trim(),
+        position: posSel ? posSel.value : '',
+        system_roles: roleCell ? (roleCell.dataset.roles||'') : '',
+        email: tr.children[3].textContent.trim(),
+        phone: tr.children[4].textContent.trim(),
+        password: tr.children[5].textContent.trim(),
+        employment_status: statusSel ? statusSel.value : '재직',
+        account_locked: lockSel ? lockSel.value === '잠금' : false,
+        approval_pin: pinBtn && pinBtn.dataset.pinSet === '1' ? '****' : null,
+        updated_at: new Date().toISOString(),
+      };
+      const existingId = tr.dataset.id;
+      try {
+        if(existingId){
+          await sb.from('users').update(record).eq('id', existingId);
+        } else {
+          const { data } = await sb.from('users').insert(record).select('id').single();
+          if(data) tr.dataset.id = data.id;
+        }
+      } catch(e){
+        console.warn('사용자 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
+      }
+    }
+  }
+
   // ---- dirty-state save/cancel buttons ----
   function armSaveButton(gridId, btnId, cancelBtnId){
     const grid = document.getElementById(gridId);
@@ -1951,6 +2036,9 @@
     document.getElementById('save-'+which).disabled = true;
     document.getElementById('cancel-'+which).disabled = true;
     snapshotGrid(which); // new "last saved" baseline for future 취소
+    if(which === 'users'){
+      saveUsersToSupabase(); // 실제 DB에 반영 (백그라운드)
+    }
     if(which === 'customers'){
       const custRows = document.querySelectorAll('#grid-customers tr');
       const lastRow = custRows[custRows.length - 1];
