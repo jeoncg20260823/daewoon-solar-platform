@@ -1624,7 +1624,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v61'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v62'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1722,6 +1722,7 @@
     if(target === 'freelancers') loadFreelancersFromSupabase();
     if(target === 'mobile') syncFieldMobileUser();
     if(target === 'dashboard' && PRE_PROJECTS.length){ syncAllPreRows(); selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name); updatePreTotalCount(); }
+    if(target === 'dashboard') loadPreProjectsFromSupabase();
     if(target === 'progress' && PROG_PROJECTS.length){ syncAllProgRows(); selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name); updateProgTotalCount(); }
   }
   document.querySelectorAll('.demo-nav button').forEach(b=>{
@@ -2159,6 +2160,135 @@
     populateFreelancerSelects();
   }
 
+  // ---- 사전프로젝트관리: Supabase 실데이터 로드/저장 (요약정보 + 공정단계 상세) ----
+  function renderPreProjectRowHtml(p, cust){
+    const creditOpts = ['A+','A','A-','B+','B','B-','C이하'].map(o=>`<option${o===p.credit_grade?' selected':''}>${o}</option>`).join('');
+    const bizOpts = ['자가소비형','임대형','기타'].map(o=>`<option${o===p.business_type?' selected':''}>${o}</option>`).join('');
+    const updated = p.updated_at ? new Date(p.updated_at).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    const safeName = (p.company_name||'').replace(/'/g,"\\'");
+    return `<tr data-step="">
+          <td class="mono link-cell" onclick="selectPreProject('${p.pre_project_no}','${safeName}')">${p.pre_project_no}</td>
+          <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">${p.company_name||''}</td>
+          <td class="readonly-cell pre-curstep-cell">-</td>
+          <td class="readonly-cell pre-status-cell">-</td>
+          <td class="readonly-cell" style="background:var(--paper);" title="고객관리 REF">${cust.freelancer_name||'-'}</td>
+          <td><select class="cell-select sales-rep-select" data-value="${cust.sales_rep||''}" disabled style="background:var(--paper);"></select></td>
+          <td><select class="cell-select">${creditOpts}</select></td>
+          <td contenteditable="true">${p.line_availability_mw||''}</td>
+          <td><select class="cell-select">${bizOpts}</select></td>
+          <td contenteditable="true">${p.initial_capacity_kw||''}</td>
+          <td contenteditable="true">${p.contract_capacity_kw||''}</td>
+          <td><select class="cell-select role-linked-select" data-role="실사" data-value="${p.inspector||''}"></select></td>
+          <td class="note-cell${p.note?'':' note-empty'}" onclick="openNoteEditor(this)">${p.note||''}</td>
+          <td class="readonly-cell updated-cell">${updated}</td>
+        </tr>`;
+  }
+  async function loadPreProjectsFromSupabase(){
+    if(!sb) return false;
+    try {
+      const { data: infoData, error: infoErr } = await sb.from('pre_project_info').select('*').order('pre_project_no');
+      if(infoErr || !infoData || !infoData.length) return false;
+      const { data: custData } = await sb.from('customers').select('company_name,freelancer_name,sales_rep');
+      const custMap = {};
+      (custData||[]).forEach(c => { custMap[c.company_name] = c; });
+      const ids = infoData.map(p=>p.pre_project_no);
+      const { data: stepsData } = await sb.from('pre_project_steps').select('*').in('pre_project_no', ids).order('step_order');
+      const stepsByProject = {};
+      (stepsData||[]).forEach(s => {
+        if(!stepsByProject[s.pre_project_no]) stepsByProject[s.pre_project_no] = [];
+        stepsByProject[s.pre_project_no].push({
+          order: s.step_order, name: s.step_name, manager: s.manager||'-', stage: s.stage||'예정',
+          planStart: s.plan_start||'', planEnd: s.plan_end||'',
+          actualStart: s.actual_start||'', actualEnd: s.actual_end||'', note: s.note||'',
+        });
+      });
+
+      PRE_PROJECTS.length = 0;
+      infoData.forEach(p => {
+        const steps = stepsByProject[p.pre_project_no];
+        let current = 0;
+        if(steps && steps.length){
+          current = steps.findIndex(r => r.stage !== '완료' && r.stage !== '보류취소');
+          if(current === -1) current = steps.length - 1;
+          PROJECT_STEP_DATA['pre_' + p.pre_project_no] = steps;
+        }
+        const cust = custMap[p.company_name] || {};
+        PRE_PROJECTS.push({ id: p.pre_project_no, name: p.company_name, current, manager: cust.sales_rep || '' });
+      });
+
+      const table = document.getElementById('grid-pre-list');
+      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
+      infoData.forEach(p => {
+        const cust = custMap[p.company_name] || {};
+        table.insertAdjacentHTML('beforeend', renderPreProjectRowHtml(p, cust));
+      });
+      populateSalesRepSelects();
+      populateRoleLinkedSelects();
+      syncAllPreRows();
+      syncCustomerStatusCells();
+      renderStepChips('pre-step-chips','grid-pre-list', PRE_STEPS, 'data-step');
+      updatePreTotalCount();
+      if(PRE_PROJECTS.length) selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name);
+      snapshotGrid('pre-list');
+      return true;
+    } catch(e){
+      console.warn('사전프로젝트 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
+      return false;
+    }
+  }
+  async function savePreProjectInfoToSupabase(){
+    if(!sb) return;
+    const rows = document.querySelectorAll('#grid-pre-list tr[data-step]');
+    for(const tr of rows){
+      const id = tr.querySelector('.link-cell').textContent.trim();
+      const companyName = tr.children[1].textContent.trim();
+      const inspectorSel = tr.querySelector('.role-linked-select');
+      const creditSel = tr.children[6].querySelector('select');
+      const bizSel = tr.children[8].querySelector('select');
+      const noteCell = tr.querySelector('.note-cell');
+      const record = {
+        pre_project_no: id,
+        company_name: companyName,
+        inspector: inspectorSel ? inspectorSel.value : '',
+        credit_grade: creditSel ? creditSel.value : '',
+        line_availability_mw: tr.children[7].textContent.trim() || null,
+        business_type: bizSel ? bizSel.value : '',
+        initial_capacity_kw: tr.children[9].textContent.trim() || null,
+        contract_capacity_kw: tr.children[10].textContent.trim() || null,
+        note: noteCell ? noteCell.textContent.trim() : '',
+        updated_at: new Date().toISOString(),
+      };
+      try {
+        await sb.from('pre_project_info').upsert(record, { onConflict: 'pre_project_no' });
+      } catch(e){
+        console.warn('사전프로젝트 정보 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
+      }
+    }
+  }
+  async function saveStepsToSupabase(kind, id){
+    if(!sb || kind !== 'pre') return; // 진행프로젝트 공정은 추후 연결 예정
+    const data = PROJECT_STEP_DATA[kind + '_' + id];
+    if(!data) return;
+    try {
+      await sb.from('pre_project_steps').delete().eq('pre_project_no', id);
+      const rows = data.map(s => ({
+        pre_project_no: id,
+        step_order: s.order,
+        step_name: s.name,
+        manager: s.manager || '',
+        stage: s.stage,
+        plan_start: s.planStart || null,
+        plan_end: s.planEnd || null,
+        actual_start: s.actualStart || null,
+        actual_end: s.actualEnd || null,
+        note: s.note || '',
+      }));
+      await sb.from('pre_project_steps').insert(rows);
+    } catch(e){
+      console.warn('공정 상세 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
+    }
+  }
+
   // ---- dirty-state save/cancel buttons ----
   function armSaveButton(gridId, btnId, cancelBtnId){
     const grid = document.getElementById(gridId);
@@ -2218,6 +2348,9 @@
     }
     if(which === 'freelancers'){
       saveFreelancersToSupabase(); // 실제 DB에 반영 (백그라운드)
+    }
+    if(which === 'pre-list'){
+      savePreProjectInfoToSupabase(); // 실제 DB에 반영 (백그라운드)
     }
   }
 
@@ -3119,6 +3252,7 @@
       };
     });
     PROJECT_STEP_DATA[kind + '_' + id] = data;
+    saveStepsToSupabase(kind, id); // 실제 DB에 반영 (백그라운드)
 
     let newCurrent = data.findIndex(r=>r.stage !== '완료');
     if(newCurrent === -1) newCurrent = data.length - 1;
@@ -3394,6 +3528,14 @@
       renderStepChips('pre-step-chips','grid-pre-list', PRE_STEPS, 'data-step');
       updatePreTotalCount();
       selectPreProject(newId, name);
+      if(sb){
+        sb.from('pre_project_info').upsert({
+          pre_project_no: newId, company_name: name, inspector: inspector||'',
+          credit_grade: 'A-', line_availability_mw: null, business_type: biz,
+          initial_capacity_kw: cap, contract_capacity_kw: null, note: '',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'pre_project_no' }).then(()=>{ saveStepsToSupabase('pre', newId); });
+      }
 
       // link back to the customer row that spawned this, if any
       if(window._pendingCustomerRow){
