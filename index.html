@@ -252,6 +252,8 @@
   .filter-tabs{ display:flex; gap:6px; padding:0 26px 14px; flex-wrap:wrap; }
   .filter-tab{ font-size:11.5px; padding:6px 12px; border-radius:999px; border:1px solid var(--grid-line); background:#fff; cursor:pointer; color:var(--slate); }
   .filter-tab.active{ background:var(--navy-3); color:#fff; border-color:var(--navy-3); }
+  .biz-subtab{ font-size:13px; font-weight:600; padding:10px 20px; border-radius:9px; border:1px solid var(--grid-line); background:#fff; cursor:pointer; color:var(--slate); }
+  .biz-subtab.active{ background:var(--navy); color:#fff; border-color:var(--navy); box-shadow:0 2px 8px rgba(18,138,87,0.25); }
 
   /* ==================== modal ==================== */
   .modal-overlay{ position:fixed; inset:0; background:rgba(11,37,69,0.45); display:none; align-items:center; justify-content:center; z-index:100; }
@@ -565,30 +567,68 @@
     <div class="grid-toolbar-title">사업현황 대시보드</div>
     <div class="toolbar-actions"><span id="bizdash-login-badge" style="font-size:11.5px;color:var(--slate);"></span></div>
   </div>
-  <div style="padding:20px 26px 4px;font-size:12px;color:var(--slate);">
-    사전·진행 프로젝트 전체를 한 화면에서 조회합니다(읽기전용). 프로젝트번호를 클릭하면 해당 공정관리 화면으로 이동합니다.
+  <div style="display:flex;gap:8px;padding:14px 26px 0;">
+    <button class="biz-subtab active" data-biztab="pre" onclick="switchBizTab('pre')">① 사전프로젝트</button>
+    <button class="biz-subtab" data-biztab="prog" onclick="switchBizTab('prog')">② 진행프로젝트</button>
+    <button class="biz-subtab" data-biztab="activity" onclick="switchBizTab('activity')">③ 업무진행상황</button>
   </div>
   <div class="content" style="padding-top:8px;">
-    <div class="panel">
-      <div class="panel-head">
-        <div class="panel-head-title" id="bizdash-pre-total">사전 프로젝트 현황 — 0건</div>
-      </div>
-      <div class="grid-wrap" style="max-height:380px;overflow-y:auto;">
-        <table class="editgrid" id="bizdash-pre-table" style="min-width:1650px;">
-          <tr><th>사전프로젝트번호</th><th>고객사명</th><th>현재공정</th><th>진행상태</th><th>영업프리랜서</th><th>영업담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>최초설치용량(kW)</th><th>계약설치용량(kW)</th><th>실사담당</th><th>업데이트일시</th></tr>
-        </table>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="panel-head">
-        <div class="panel-head-title" id="bizdash-prog-total">진행 프로젝트 현황 — 0건</div>
-      </div>
-      <div class="grid-wrap" style="max-height:380px;overflow-y:auto;">
-        <table class="editgrid" id="bizdash-prog-table" style="min-width:1750px;">
-          <tr><th>진행프로젝트번호</th><th>고객사명</th><th>현재공정</th><th>진행상태</th><th>설계담당</th><th>시공담당</th><th>행정담당</th><th>실사담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>계약설치용량(kW)</th><th>최종설치용량(kW)</th><th>착수예정일</th><th>사전프로젝트번호</th><th>업데이트일시</th></tr>
-        </table>
+
+    <div class="biz-tab-panel" id="biz-tab-pre">
+      <div id="bizdash-pre-filters" style="display:flex;gap:10px;padding:0 26px 12px;flex-wrap:wrap;"></div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-head-title" id="bizdash-pre-total">사전 프로젝트 현황 — 0건</div>
+        </div>
+        <div class="grid-wrap" style="max-height:420px;overflow-y:auto;">
+          <table class="editgrid" id="bizdash-pre-table" style="min-width:1650px;">
+            <tr><th>사전프로젝트번호</th><th>고객사명</th><th>현재공정</th><th>진행상태</th><th>영업프리랜서</th><th>영업담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>최초설치용량(kW)</th><th>계약설치용량(kW)</th><th>실사담당</th><th>업데이트일시</th></tr>
+          </table>
+        </div>
       </div>
     </div>
+
+    <div class="biz-tab-panel" id="biz-tab-prog" style="display:none;">
+      <div id="bizdash-prog-filters" style="display:flex;gap:10px;padding:0 26px 12px;flex-wrap:wrap;"></div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-head-title" id="bizdash-prog-total">진행 프로젝트 현황 — 0건</div>
+        </div>
+        <div class="grid-wrap" style="max-height:420px;overflow-y:auto;">
+          <table class="editgrid" id="bizdash-prog-table" style="min-width:1750px;">
+            <tr><th>진행프로젝트번호</th><th>고객사명</th><th>현재공정</th><th>진행상태</th><th>설계담당</th><th>시공담당</th><th>행정담당</th><th>실사담당</th><th>신용도</th><th>선로유무(MW)</th><th>사업유형</th><th>계약설치용량(kW)</th><th>최종설치용량(kW)</th><th>착수예정일</th><th>사전프로젝트번호</th><th>업데이트일시</th></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="biz-tab-panel" id="biz-tab-activity" style="display:none;">
+      <div style="display:flex;gap:14px;align-items:flex-end;padding:0 26px 14px;flex-wrap:wrap;">
+        <div>
+          <label style="font-size:11px;color:var(--slate);display:block;margin-bottom:4px;">업무진행기간 시작</label>
+          <input type="date" id="activity-date-start" onchange="renderActivityLog()" style="padding:8px 10px;border:1px solid var(--grid-line);border-radius:7px;font-size:13px;">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--slate);display:block;margin-bottom:4px;">업무진행기간 종료</label>
+          <input type="date" id="activity-date-end" onchange="renderActivityLog()" style="padding:8px 10px;border:1px solid var(--grid-line);border-radius:7px;font-size:13px;">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--slate);display:block;margin-bottom:4px;">업무담당자</label>
+          <select id="activity-manager-filter" class="cell-select" onchange="renderActivityLog()" style="padding:8px 10px;"><option value="">전체</option></select>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-head-title" id="bizdash-activity-total">업무진행상황 — 0건</div>
+        </div>
+        <div class="grid-wrap" style="max-height:420px;overflow-y:auto;">
+          <table class="editgrid" id="bizdash-activity-table" style="min-width:1200px;">
+            <tr><th>일자</th><th>구분</th><th>프로젝트번호</th><th>고객사명</th><th>공정명</th><th>담당자</th><th>수행내용</th></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
     </div>
   </div>
@@ -1624,7 +1664,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v65'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v69'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1715,7 +1755,11 @@
     document.querySelectorAll('.side-item[data-key]').forEach(el=>{
       el.classList.toggle('active', el.dataset.key === target);
     });
-    if(target === 'bizdash') renderBizDashboard();
+    if(target === 'bizdash'){
+      renderBizDashboard();
+      loadPreProjectsFromSupabase().then(()=>renderBizDashboard());
+      loadProgProjectsFromSupabase().then(()=>renderBizDashboard());
+    }
     if(target === 'customers') syncCustomerStatusCells();
     if(target === 'users') loadUsersFromSupabase();
     if(target === 'customers') loadCustomersFromSupabase();
@@ -1852,6 +1896,8 @@
     document.querySelectorAll('#grid-users tr').forEach(tr=>{
       const roleCell = tr.querySelector('.role-cell');
       if(!roleCell) return;
+      const statusSel = tr.children[6] ? tr.children[6].querySelector('select') : null;
+      if(statusSel && statusSel.value === '퇴사') return; // 퇴직자는 담당자 선택 목록에서 제외
       const roles = (roleCell.dataset.roles || '').split(',');
       if(roles.includes(roleName)){
         const nameCell = tr.children[0];
@@ -1866,6 +1912,7 @@
       const role = sel.dataset.role;
       const current = sel.dataset.value || sel.value || '';
       const names = getUsersByRole(role);
+      if(current && !names.includes(current)) names.push(current); // 기존에 지정된 퇴직자는 표시만 유지
       const blank = '<option value="">미지정</option>';
       sel.innerHTML = blank + names.map(n=>`<option${n===current?' selected':''}>${n}</option>`).join('');
     });
@@ -1875,6 +1922,8 @@
     const names = [];
     document.querySelectorAll('#grid-users tr').forEach(tr=>{
       if(tr.querySelector('th')) return;
+      const statusSel = tr.children[6] ? tr.children[6].querySelector('select') : null;
+      if(statusSel && statusSel.value === '퇴사') return; // 퇴직자는 담당자 선택 목록에서 제외
       const nameCell = tr.children[0];
       if(nameCell && nameCell.textContent.trim()) names.push(nameCell.textContent.trim());
     });
@@ -1884,8 +1933,9 @@
     const names = getAllUserNames();
     document.querySelectorAll('.sales-rep-select').forEach(sel=>{
       const current = sel.value || sel.dataset.value || '';
+      const opts = current && !names.includes(current) ? [...names, current] : names; // 기존에 지정된 퇴직자는 표시만 유지
       const blank = current === '' ? '<option value="" selected disabled>선택</option>' : '';
-      sel.innerHTML = blank + names.map(r=>`<option${r===current?' selected':''}>${r}</option>`).join('');
+      sel.innerHTML = blank + opts.map(r=>`<option${r===current?' selected':''}>${r}</option>`).join('');
     });
   }
   function getFreelancerNames(){
@@ -3399,6 +3449,78 @@
     return [design, cons, admin, insp].includes(userName);
   }
 
+  // ---- 사업현황 대시보드: 3분할 서브탭 (사전/진행/업무진행상황) ----
+  function switchBizTab(tab){
+    document.querySelectorAll('.biz-tab-panel').forEach(p=>p.style.display='none');
+    const panel = document.getElementById('biz-tab-'+tab);
+    if(panel) panel.style.display='';
+    document.querySelectorAll('.biz-subtab').forEach(b=>b.classList.toggle('active', b.dataset.biztab===tab));
+    if(tab === 'activity') initActivityTab();
+  }
+  function setupBizFilters(){
+    refreshInlineFilters('bizdash-pre-table', 'bizdash-pre-filters', [
+      { label: '영업프리랜서', getFn: tr => tr.children[4] ? tr.children[4].textContent.trim() : '' },
+      { label: '영업담당', getFn: tr => tr.children[5] ? tr.children[5].textContent.trim() : '' },
+      { label: '실사담당', getFn: tr => tr.children[11] ? tr.children[11].textContent.trim() : '' },
+      { label: '진행상태', getFn: tr => { const b = tr.children[3] ? tr.children[3].querySelector('span') : null; return b ? b.textContent.trim() : (tr.children[3]?tr.children[3].textContent.trim():''); } },
+    ]);
+    refreshInlineFilters('bizdash-prog-table', 'bizdash-prog-filters', [
+      { label: '실사담당', getFn: tr => tr.children[7] ? tr.children[7].textContent.trim() : '' },
+      { label: '설계담당', getFn: tr => tr.children[4] ? tr.children[4].textContent.trim() : '' },
+      { label: '시공담당', getFn: tr => tr.children[5] ? tr.children[5].textContent.trim() : '' },
+      { label: '행정담당', getFn: tr => tr.children[6] ? tr.children[6].textContent.trim() : '' },
+      { label: '진행상태', getFn: tr => { const b = tr.children[3] ? tr.children[3].querySelector('span') : null; return b ? b.textContent.trim() : (tr.children[3]?tr.children[3].textContent.trim():''); } },
+    ]);
+  }
+  function initActivityTab(){
+    const startEl = document.getElementById('activity-date-start');
+    const endEl = document.getElementById('activity-date-end');
+    if(!startEl.value){
+      const today = new Date();
+      const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
+      startEl.value = fmtDate(yesterday);
+      endEl.value = fmtDate(today);
+    }
+    const mgrSel = document.getElementById('activity-manager-filter');
+    if(mgrSel.options.length <= 1){
+      getAllUserNames().forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; mgrSel.appendChild(o); });
+    }
+    renderActivityLog();
+  }
+  function renderActivityLog(){
+    const start = document.getElementById('activity-date-start').value;
+    const end = document.getElementById('activity-date-end').value;
+    const mgr = document.getElementById('activity-manager-filter').value;
+    const entries = [];
+    function collect(list, kind, label){
+      list.forEach(proj=>{
+        const data = PROJECT_STEP_DATA[kind+'_'+proj.id];
+        if(!data) return;
+        data.forEach(step=>{
+          if(mgr && step.manager !== mgr) return;
+          if(step.actualStart && (!start || step.actualStart >= start) && (!end || step.actualStart <= end)){
+            entries.push({ date: step.actualStart, kind: label, id: proj.id, company: proj.name, step: step.name, manager: step.manager||'-', action: '착수' });
+          }
+          if(step.actualEnd && (!start || step.actualEnd >= start) && (!end || step.actualEnd <= end)){
+            entries.push({ date: step.actualEnd, kind: label, id: proj.id, company: proj.name, step: step.name, manager: step.manager||'-', action: '완료' });
+          }
+        });
+      });
+    }
+    collect(PRE_PROJECTS, 'pre', '사전');
+    collect(PROG_PROJECTS, 'prog', '진행');
+    entries.sort((a,b)=> b.date.localeCompare(a.date));
+    const table = document.getElementById('bizdash-activity-table');
+    table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
+    entries.forEach(e=>{
+      const tr = document.createElement('tr');
+      const goFn = e.kind==='사전' ? `go('dashboard');selectPreProject('${e.id}','${e.company.replace(/'/g,"\\'")}')` : `go('progress');selectProgressProject('${e.id}','${e.company.replace(/'/g,"\\'")}')`;
+      tr.innerHTML = `<td class="readonly-cell">${e.date}</td><td class="readonly-cell">${e.kind}</td><td class="mono link-cell" onclick="${goFn}">${e.id}</td><td>${e.company}</td><td>${e.step}</td><td>${e.manager}</td><td>${e.step} ${e.action}</td>`;
+      table.appendChild(tr);
+    });
+    document.getElementById('bizdash-activity-total').textContent = `업무진행상황 — ${entries.length}건`;
+  }
+
   function renderBizDashboard(){
     const badge = document.getElementById('bizdash-login-badge');
     if(badge){
@@ -3462,6 +3584,8 @@
       progTable.appendChild(tr);
     });
     document.getElementById('bizdash-prog-total').textContent = `진행 프로젝트 현황 — ${progRows.length}건`;
+    populateSalesRepSelects();
+    setupBizFilters();
   }
 
   function openProcessDetailModal(kind, draftOverride){
