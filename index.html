@@ -207,12 +207,16 @@
   table.editgrid td{ padding:0; border-bottom:1px solid #EEF2F7; border-right:1px solid #F3F6F4; }
   table.editgrid td[contenteditable="true"]{ padding:9px 14px; cursor:text; }
   #grid-customers th:nth-child(1), #grid-customers td:nth-child(1){ min-width:150px; }
+  #grid-customers th:nth-child(3), #grid-customers td:nth-child(3){ min-width:130px; }
+  #grid-customers th:nth-child(9), #grid-customers td:nth-child(9){ min-width:130px; }
   #grid-users th:nth-child(1), #grid-users td:nth-child(1){ min-width:120px; }
   #grid-users th:nth-child(2), #grid-users td:nth-child(2){ min-width:95px; }
   #grid-users th:nth-child(5), #grid-users td:nth-child(5){ min-width:130px; }
   #grid-users th:nth-child(11), #grid-users td:nth-child(11){ min-width:110px; }
   #grid-holds th:nth-child(7), #grid-holds td:nth-child(7){ min-width:320px; }
+  #grid-holds th:nth-child(8), #grid-holds td:nth-child(8){ min-width:110px; }
   #grid-holds th:nth-child(9), #grid-holds td:nth-child(9){ min-width:130px; }
+  #grid-holds th:nth-child(10), #grid-holds td:nth-child(10){ min-width:150px; }
   #grid-customers th:nth-child(6), #grid-customers td:nth-child(6){ min-width:280px; }
   table.editgrid td[contenteditable="true"]:focus{ outline:2px solid var(--navy-3); outline-offset:-2px; background:#F2FBF6; }
   table.editgrid tr:hover td{ background:#FAFEFB; }
@@ -1671,7 +1675,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v80'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v81'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
