@@ -1664,7 +1664,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v72'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v73'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -3082,6 +3082,7 @@
   // ---- 공정 상세 관리: 단계별 담당자·일정·진행상태 편집 (팝업) ----
   const PROJECT_STEP_DATA = {};
   const PROJECT_STEP_TOUCHED = {}; // 사용자가 공정 상세 팝업을 실제로 저장한 적 있는지 추적 ("공정관리 미수립" 표시용)
+  const DEMO_PROG_ACTORS = ['김영훈','김정훈','권순봉'];
   function initStepData(kind, id){
     const steps = kind==='pre' ? PRE_STEPS : PROG_STEPS;
     const offsets = kind==='pre' ? PRE_OFFSETS : PROG_OFFSETS;
@@ -3095,15 +3096,19 @@
       // 데모 시드 데이터로 등록된 프로젝트(proj.current > 0)는 이미 진행된 단계들의 실적일자를
       // 계획일자와 동일하게 채워 타임라인과 공정 상세 데이터가 서로 모순되지 않도록 합니다.
       // 신규로 생성되는 프로젝트는 proj.current가 0에서 시작하므로 실적일자가 항상 빈칸으로 유지됩니다.
-      let stage = '예정', actualStart = '', actualEnd = '';
+      let stage = '예정', actualStart = '', actualEnd = '', updatedBy = '';
       if(i < proj.current){
         stage = '완료'; actualStart = fmtDate(startDate); actualEnd = fmtDate(endDate);
+        if(kind === 'prog'){
+          const projIdx = list.findIndex(p=>p.id===id);
+          updatedBy = DEMO_PROG_ACTORS[(projIdx + i) % DEMO_PROG_ACTORS.length]; // 데모용 진행자 표시 (프로젝트·단계별로 골고루 분산)
+        }
       }
       return {
         order: i+1, name: label, manager: proj.manager || '-', stage: stage,
         planStart: fmtDate(startDate), planEnd: fmtDate(endDate),
         actualStart: actualStart, actualEnd: actualEnd, note: '',
-        updatedBy: '', updatedAt: '',
+        updatedBy: updatedBy, updatedAt: '',
       };
     });
   }
