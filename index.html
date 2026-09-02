@@ -206,6 +206,7 @@
   table.editgrid th{ text-align:left; padding:10px 14px; background:var(--paper); color:var(--slate); font-weight:600; font-size:11.5px; border-bottom:1px solid var(--grid-line); white-space:nowrap; position:sticky; top:0; }
   table.editgrid td{ padding:0; border-bottom:1px solid #EEF2F7; border-right:1px solid #F3F6F4; }
   table.editgrid td[contenteditable="true"]{ padding:9px 14px; cursor:text; }
+  #grid-customers th:nth-child(6), #grid-customers td:nth-child(6){ min-width:280px; }
   table.editgrid td[contenteditable="true"]:focus{ outline:2px solid var(--navy-3); outline-offset:-2px; background:#F2FBF6; }
   table.editgrid tr:hover td{ background:#FAFEFB; }
   .urgent-badge{ display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700; background:#FCE9E9; color:var(--danger); cursor:pointer; }
@@ -1663,7 +1664,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v76'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v77'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
