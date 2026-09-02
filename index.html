@@ -623,7 +623,7 @@
         </div>
         <div class="grid-wrap" style="max-height:420px;overflow-y:auto;">
           <table class="editgrid" id="bizdash-activity-table" style="min-width:1200px;">
-            <tr><th>일자</th><th>구분</th><th>프로젝트번호</th><th>고객사명</th><th>공정명</th><th>담당자</th><th>수행내용</th></tr>
+            <tr><th>일자</th><th>구분</th><th>프로젝트번호</th><th>고객사명</th><th>공정명</th><th>진행자</th><th>수행내용</th></tr>
           </table>
         </div>
       </div>
@@ -1664,7 +1664,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v69'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v72'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2254,6 +2254,7 @@
           order: s.step_order, name: s.step_name, manager: s.manager||'-', stage: s.stage||'예정',
           planStart: s.plan_start||'', planEnd: s.plan_end||'',
           actualStart: s.actual_start||'', actualEnd: s.actual_end||'', note: s.note||'',
+          updatedBy: s.updated_by||'', updatedAt: '',
         });
       });
 
@@ -2338,6 +2339,7 @@
         actual_start: s.actualStart || null,
         actual_end: s.actualEnd || null,
         note: s.note || '',
+        updated_by: s.updatedBy || null,
       }));
       await sb.from(table).insert(rows);
     } catch(e){
@@ -2388,6 +2390,7 @@
           order: s.step_order, name: s.step_name, manager: s.manager||'-', stage: s.stage||'예정',
           planStart: s.plan_start||'', planEnd: s.plan_end||'',
           actualStart: s.actual_start||'', actualEnd: s.actual_end||'', note: s.note||'',
+          updatedBy: s.updated_by||'', updatedAt: '',
         });
       });
 
@@ -3100,6 +3103,7 @@
         order: i+1, name: label, manager: proj.manager || '-', stage: stage,
         planStart: fmtDate(startDate), planEnd: fmtDate(endDate),
         actualStart: actualStart, actualEnd: actualEnd, note: '',
+        updatedBy: '', updatedAt: '',
       };
     });
   }
@@ -3497,12 +3501,13 @@
         const data = PROJECT_STEP_DATA[kind+'_'+proj.id];
         if(!data) return;
         data.forEach(step=>{
-          if(mgr && step.manager !== mgr) return;
+          const actor = step.updatedBy || step.manager || '-';
+          if(mgr && actor !== mgr) return;
           if(step.actualStart && (!start || step.actualStart >= start) && (!end || step.actualStart <= end)){
-            entries.push({ date: step.actualStart, kind: label, id: proj.id, company: proj.name, step: step.name, manager: step.manager||'-', action: '착수' });
+            entries.push({ date: step.actualStart, kind: label, id: proj.id, company: proj.name, step: step.name, actor, action: '착수' });
           }
           if(step.actualEnd && (!start || step.actualEnd >= start) && (!end || step.actualEnd <= end)){
-            entries.push({ date: step.actualEnd, kind: label, id: proj.id, company: proj.name, step: step.name, manager: step.manager||'-', action: '완료' });
+            entries.push({ date: step.actualEnd, kind: label, id: proj.id, company: proj.name, step: step.name, actor, action: '완료' });
           }
         });
       });
@@ -3515,7 +3520,7 @@
     entries.forEach(e=>{
       const tr = document.createElement('tr');
       const goFn = e.kind==='사전' ? `go('dashboard');selectPreProject('${e.id}','${e.company.replace(/'/g,"\\'")}')` : `go('progress');selectProgressProject('${e.id}','${e.company.replace(/'/g,"\\'")}')`;
-      tr.innerHTML = `<td class="readonly-cell">${e.date}</td><td class="readonly-cell">${e.kind}</td><td class="mono link-cell" onclick="${goFn}">${e.id}</td><td>${e.company}</td><td>${e.step}</td><td>${e.manager}</td><td>${e.step} ${e.action}</td>`;
+      tr.innerHTML = `<td class="readonly-cell">${e.date}</td><td class="readonly-cell">${e.kind}</td><td class="mono link-cell" onclick="${goFn}">${e.id}</td><td>${e.company}</td><td>${e.step}</td><td>${e.actor}</td><td>${e.step} ${e.action}</td>`;
       table.appendChild(tr);
     });
     document.getElementById('bizdash-activity-total').textContent = `업무진행상황 — ${entries.length}건`;
@@ -3647,18 +3652,28 @@
     const id = kind==='pre' ? window._currentPreId : window._currentProgId;
     if(!id) return;
     PROJECT_STEP_TOUCHED[kind + '_' + id] = true;
+    const currentActor = CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.name : (CURRENT_USER_NAME || '-');
+    const prevData = PROJECT_STEP_DATA[kind + '_' + id] || [];
     const rows = Array.from(document.querySelectorAll('#modal-content table tr')).slice(1);
     const data = rows.map((tr,i)=>{
       const c = tr.children;
+      const actualStart = c[6].querySelector('input').value;
+      const actualEnd = c[7].querySelector('input').value;
+      const prev = prevData[i] || {};
+      const hasActual = !!(actualStart || actualEnd);
+      const changed = actualStart !== (prev.actualStart||'') || actualEnd !== (prev.actualEnd||'');
+      // 실적일자가 있는 공정만 "누가·언제 진행했는지" 자동 기록 (변경이 있으면 최신 진행자로 갱신, 그대로면 기존 기록 유지)
+      const updatedBy = hasActual ? (changed ? currentActor : (prev.updatedBy || currentActor)) : '';
+      const updatedAt = hasActual ? (changed ? new Date().toISOString() : (prev.updatedAt || new Date().toISOString())) : '';
       return {
         order: i+1, name: c[1].textContent.trim(),
         manager: c[2].textContent.trim(),
         stage: c[3].querySelector('.pd-stage-value').value,
         planStart: c[4].textContent.trim(),
         planEnd: c[5].textContent.trim(),
-        actualStart: c[6].querySelector('input').value,
-        actualEnd: c[7].querySelector('input').value,
+        actualStart, actualEnd,
         note: c[8].textContent.trim(),
+        updatedBy, updatedAt,
       };
     });
     PROJECT_STEP_DATA[kind + '_' + id] = data;
