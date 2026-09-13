@@ -1,0 +1,19 @@
+name: Supabase Keep-Alive
+
+# 3일마다 자동으로 Supabase에 신호를 보내서 무료 요금제의 "7일 미접속 자동 일시정지"를 방지합니다.
+# 수동으로도 실행 가능합니다 (Actions 탭 > 우측 "Run workflow" 버튼)
+on:
+  schedule:
+    - cron: '0 0 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase database
+        run: |
+          curl -s -o /dev/null -w "응답 코드: %{http_code}\n" \
+            "https://sedaxifdcckylcrtcabj.supabase.co/rest/v1/app_settings?select=key&limit=1" \
+            -H "apikey: sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-" \
+            -H "Authorization: Bearer sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-"
