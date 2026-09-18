@@ -292,6 +292,17 @@
   .modal-box th{ text-align:left; padding:6px 8px; background:var(--paper); font-size:10.5px; color:var(--slate); }
   .modal-box td{ padding:6px 8px; border-bottom:1px solid #EEF2F7; }
   .modal-actions{ display:flex; justify-content:flex-end; gap:8px; }
+
+  /* ==================== save popup toast ==================== */
+  .save-popup-overlay{ position:fixed; inset:0; background:rgba(11,37,69,0.28); display:none; align-items:center; justify-content:center; z-index:200; }
+  .save-popup-overlay.open{ display:flex; }
+  .save-popup-box{ background:#fff; border-radius:14px; padding:26px 34px; min-width:220px; max-width:360px; text-align:center; box-shadow:0 12px 32px rgba(11,37,69,0.22); animation: savePopupIn 0.18s ease-out; }
+  @keyframes savePopupIn{ 0%{ transform:scale(0.9); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
+  .save-popup-icon{ width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:22px; }
+  .save-popup-icon.ok{ background:var(--success-bg); color:var(--success); }
+  .save-popup-icon.error{ background:#FDECEC; color:var(--danger); }
+  .save-popup-text{ font-size:13.5px; font-weight:600; color:var(--navy); line-height:1.5; }
+  .save-popup-box button{ margin-top:16px; border:none; background:var(--navy); color:#fff; font-size:12px; font-weight:600; padding:7px 20px; border-radius:8px; cursor:pointer; }
   .link-cell{ color:var(--navy-3); cursor:pointer !important; text-decoration:underline; }
   #grid-pre-list, #grid-progress{ min-width:1750px; }
   #grid-pre-list td, #grid-pre-list th, #grid-progress td, #grid-progress th{ white-space:nowrap; }
@@ -1718,6 +1729,11 @@
   </div>
 </div>
 
+<!-- ============ save 확인 팝업 ============ -->
+<div class="save-popup-overlay" id="save-popup-overlay" onclick="if(event.target===this) closeSavePopup();">
+  <div class="save-popup-box" id="save-popup-box"></div>
+</div>
+
 <!-- ============ generic modal: 공정 생성 / 기기 관리 ============ -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-box" id="modal-box">
@@ -1734,7 +1750,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v87'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v88'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2686,8 +2702,7 @@
     const preOk = validateManhoursTable('grid-pre-manhours');
     const progOk = validateManhoursTable('grid-prog-manhours');
     if(!preOk || !progOk){
-      msg.textContent = '숫자만 입력해 주세요 (계획종료는 계획시작 이상이어야 합니다).';
-      msg.className = 'save-msg error';
+      showSavePopup('숫자만 입력해 주세요.<br>(계획종료는 계획시작 이상이어야 합니다.)', true);
       return;
     }
     PRE_OFFSETS = readOffsetsFromTable('grid-pre-manhours');
@@ -2696,9 +2711,7 @@
     document.getElementById('cancel-manhours').disabled = true;
     snapshotGrid('pre-manhours');
     snapshotGrid('prog-manhours');
-    msg.textContent = '저장되었습니다.';
-    msg.className = 'save-msg ok';
-    setTimeout(()=>{ msg.textContent=''; }, 2500);
+    showSavePopup('저장되었습니다.');
     if(!sb) return;
     try {
       await sb.from('pre_process_standard').delete().neq('id', -1);
@@ -2838,15 +2851,12 @@
     if(which === 'users') ok = validateUserGrid();
     else if(which === 'customers') ok = validateCustomerGrid();
     if(!ok){
-      msg.textContent = '필수항목(*)을 모두 입력해 주세요.';
-      msg.className = 'save-msg error';
+      showSavePopup('필수항목(*)을 모두 입력해 주세요.', true);
       return; // block save, keep buttons enabled
     }
     // stamp 업데이트일시 on edited rows (demo: stamp all rows)
     document.querySelectorAll('#grid-'+which+' .updated-cell').forEach(td=>{ td.textContent = nowStamp(); });
-    msg.textContent = '저장되었습니다.';
-    msg.className = 'save-msg ok';
-    setTimeout(()=>{ msg.textContent=''; }, 2500);
+    showSavePopup('저장되었습니다.');
     document.getElementById('save-'+which).disabled = true;
     document.getElementById('cancel-'+which).disabled = true;
     snapshotGrid(which); // new "last saved" baseline for future 취소
@@ -3906,8 +3916,7 @@
             selectPreProject(preId, preName); // 사전 프로젝트 진행상태도 함께 새로고침
           }
         }
-        const msg = document.getElementById('save-msg-progress');
-        if(msg){ msg.textContent = '상업운전개시 확정 — 사전/진행 프로젝트가 종료 처리되었습니다.'; msg.className = 'save-msg ok'; setTimeout(()=>{ msg.textContent=''; }, 3500); }
+        showSavePopup('상업운전개시 확정<br>사전/진행 프로젝트가 종료 처리되었습니다.');
       }
     }
   }
@@ -4218,6 +4227,28 @@
       }
     }
     closeModal();
+  }
+  // ---- 저장 확인 팝업 ----
+  let _savePopupTimer = null;
+  function showSavePopup(text, isError){
+    const overlay = document.getElementById('save-popup-overlay');
+    const box = document.getElementById('save-popup-box');
+    if(!overlay || !box) return;
+    if(_savePopupTimer){ clearTimeout(_savePopupTimer); _savePopupTimer = null; }
+    if(isError){
+      box.innerHTML = `<div class="save-popup-icon error">✕</div><div class="save-popup-text">${text}</div><button onclick="closeSavePopup()">확인</button>`;
+    } else {
+      box.innerHTML = `<div class="save-popup-icon ok">✓</div><div class="save-popup-text">${text}</div>`;
+    }
+    overlay.classList.add('open');
+    if(!isError){
+      _savePopupTimer = setTimeout(()=>{ closeSavePopup(); }, 1600);
+    }
+  }
+  function closeSavePopup(){
+    const overlay = document.getElementById('save-popup-overlay');
+    if(overlay) overlay.classList.remove('open');
+    if(_savePopupTimer){ clearTimeout(_savePopupTimer); _savePopupTimer = null; }
   }
   function closeModal(){
     document.getElementById('modal-overlay').classList.remove('open');
