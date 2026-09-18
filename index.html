@@ -202,6 +202,13 @@
   .btn-add{ font-size:12.5px; padding:8px 16px; border-radius:7px; border:none; background:var(--navy); color:#fff; font-weight:600; cursor:pointer; font-family:inherit; }
   .grid-content{ padding:20px 26px; }
   .grid-wrap{ background:#fff; border:1px solid var(--grid-line); border-radius:var(--radius); overflow:auto; }
+  .mh-scroll-wrap{ scrollbar-width:auto; scrollbar-color:var(--navy-3) var(--paper); scrollbar-gutter:stable; }
+  .mh-scroll-wrap::-webkit-scrollbar{ width:16px; }
+  .mh-scroll-wrap::-webkit-scrollbar-track{ background:var(--paper); border-radius:0 var(--radius) var(--radius) 0; border-left:1px solid var(--grid-line); }
+  .mh-scroll-wrap::-webkit-scrollbar-thumb{ background:var(--navy-3); border-radius:8px; border:4px solid var(--paper); min-height:40px; }
+  .mh-scroll-wrap::-webkit-scrollbar-thumb:hover{ background:var(--navy); }
+  .mh-scroll-hint{ position:absolute; left:0; right:16px; bottom:0; padding:8px 14px; text-align:center; font-size:11px; font-weight:600; color:#fff; background:linear-gradient(0deg, rgba(11,37,69,0.85), rgba(11,37,69,0)); border-radius:0 0 var(--radius) var(--radius); pointer-events:none; transition:opacity 0.2s; }
+  .mh-scroll-hint.hidden{ opacity:0; }
   table.editgrid{ width:100%; border-collapse:collapse; font-size:12.5px; }
   table.editgrid th{ text-align:left; padding:10px 14px; background:var(--paper); color:var(--slate); font-weight:600; font-size:11.5px; border-bottom:1px solid var(--grid-line); white-space:nowrap; position:sticky; top:0; }
   table.editgrid td{ padding:0; border-bottom:1px solid #EEF2F7; border-right:1px solid #F3F6F4; }
@@ -1345,10 +1352,13 @@
     <div class="biz-tab-panel" id="mh-tab-prog" style="display:none;">
       <div class="panel">
         <div class="panel-head"><div class="panel-head-title">진행 프로젝트 공수 (19단계)</div></div>
-        <div class="grid-wrap">
-          <table class="editgrid" id="grid-prog-manhours">
-            <tr><th>순서</th><th>공정명</th><th>계획시작(D+일)</th><th>계획종료(D+일)</th></tr>
-          </table>
+        <div class="mh-scroll-container" style="position:relative;">
+          <div class="grid-wrap mh-scroll-wrap" id="mh-prog-scrollwrap" style="max-height:520px;overflow-y:scroll;">
+            <table class="editgrid" id="grid-prog-manhours">
+              <tr><th>순서</th><th>공정명</th><th>계획시작(D+일)</th><th>계획종료(D+일)</th></tr>
+            </table>
+          </div>
+          <div class="mh-scroll-hint" id="mh-prog-scrollhint">▼ 아래로 스크롤하여 더 보기 (19단계 전체)</div>
         </div>
       </div>
     </div>
@@ -1750,7 +1760,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v88'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v90'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2643,11 +2653,22 @@
     snapshotGrid('prog-manhours');
     document.getElementById('save-manhours').disabled = true;
     document.getElementById('cancel-manhours').disabled = true;
+    updateManhoursScrollHint();
   }
+  function updateManhoursScrollHint(){
+    const wrap = document.getElementById('mh-prog-scrollwrap');
+    const hint = document.getElementById('mh-prog-scrollhint');
+    if(!wrap || !hint) return;
+    const hasMore = (wrap.scrollTop + wrap.clientHeight) < (wrap.scrollHeight - 2);
+    hint.classList.toggle('hidden', !hasMore);
+  }
+  { const wrap = document.getElementById('mh-prog-scrollwrap');
+    if(wrap) wrap.addEventListener('scroll', updateManhoursScrollHint); }
   function switchManhoursTab(tab){
     document.querySelectorAll('#screen-manhours .biz-tab-panel').forEach(p=>p.style.display='none');
     document.getElementById('mh-tab-'+tab).style.display='';
     document.querySelectorAll('#screen-manhours .biz-subtab').forEach(b=>b.classList.toggle('active', b.dataset.mhtab===tab));
+    if(tab === 'prog') setTimeout(updateManhoursScrollHint, 30);
   }
   function readOffsetsFromTable(tableId){
     const rows = Array.from(document.querySelectorAll('#'+tableId+' tr')).filter(r=>!r.querySelector('th'));
