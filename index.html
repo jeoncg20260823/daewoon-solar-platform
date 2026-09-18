@@ -1310,6 +1310,7 @@
     <div class="toolbar-actions">
       <button class="btn-primary" id="save-manhours" style="width:auto;padding:9px 22px;" disabled onclick="saveManhours()">저장</button>
       <button class="btn-mini" id="cancel-manhours" style="background:var(--navy-3);" disabled onclick="cancelManhours()">저장안함</button>
+      <span class="save-msg" id="save-msg-manhours"></span>
     </div>
   </div>
   <div style="padding:16px 26px 0;font-size:12px;color:var(--slate);">
@@ -1733,7 +1734,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v86'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v87'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2614,8 +2615,8 @@
       const tr = document.createElement('tr');
       tr.innerHTML = `<td class="readonly-cell" style="text-align:center;">${i+1}</td>
         <td class="readonly-cell">${name}</td>
-        <td contenteditable="true" class="mh-start">${s}</td>
-        <td contenteditable="true" class="mh-end">${e}</td>`;
+        <td contenteditable="true" class="mh-start" inputmode="numeric" oninput="sanitizeNumericCell(this)">${s}</td>
+        <td contenteditable="true" class="mh-end" inputmode="numeric" oninput="sanitizeNumericCell(this)">${e}</td>`;
       table.appendChild(tr);
     });
   }
@@ -2656,13 +2657,48 @@
     }
     renderManhoursTables();
   }
+  function sanitizeNumericCell(el){
+    const digits = el.textContent.replace(/[^0-9]/g, '');
+    if(el.textContent !== digits){
+      el.textContent = digits;
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }
+  function validateManhoursTable(tableId){
+    const rows = Array.from(document.querySelectorAll('#'+tableId+' tr')).filter(r=>!r.querySelector('th'));
+    for(const r of rows){
+      const sEl = r.querySelector('.mh-start'), eEl = r.querySelector('.mh-end');
+      const s = sEl.textContent.trim(), e = eEl.textContent.trim();
+      const invalid = !/^[0-9]+$/.test(s) || !/^[0-9]+$/.test(e) || parseInt(e,10) < parseInt(s,10);
+      sEl.classList.toggle('cell-invalid', !/^[0-9]+$/.test(s));
+      eEl.classList.toggle('cell-invalid', !/^[0-9]+$/.test(e) || parseInt(e,10) < parseInt(s,10));
+      if(invalid) return false;
+    }
+    return true;
+  }
   async function saveManhours(){
+    const msg = document.getElementById('save-msg-manhours');
+    const preOk = validateManhoursTable('grid-pre-manhours');
+    const progOk = validateManhoursTable('grid-prog-manhours');
+    if(!preOk || !progOk){
+      msg.textContent = '숫자만 입력해 주세요 (계획종료는 계획시작 이상이어야 합니다).';
+      msg.className = 'save-msg error';
+      return;
+    }
     PRE_OFFSETS = readOffsetsFromTable('grid-pre-manhours');
     PROG_OFFSETS = readOffsetsFromTable('grid-prog-manhours');
     document.getElementById('save-manhours').disabled = true;
     document.getElementById('cancel-manhours').disabled = true;
     snapshotGrid('pre-manhours');
     snapshotGrid('prog-manhours');
+    msg.textContent = '저장되었습니다.';
+    msg.className = 'save-msg ok';
+    setTimeout(()=>{ msg.textContent=''; }, 2500);
     if(!sb) return;
     try {
       await sb.from('pre_process_standard').delete().neq('id', -1);
@@ -2674,6 +2710,9 @@
     }
   }
   function cancelManhours(){
+    const msg = document.getElementById('save-msg-manhours');
+    msg.textContent = '';
+    document.querySelectorAll('#screen-manhours .cell-invalid').forEach(td=>td.classList.remove('cell-invalid'));
     if(gridSnapshots['pre-manhours'] !== undefined) document.getElementById('grid-pre-manhours').innerHTML = gridSnapshots['pre-manhours'];
     if(gridSnapshots['prog-manhours'] !== undefined) document.getElementById('grid-prog-manhours').innerHTML = gridSnapshots['prog-manhours'];
     document.getElementById('save-manhours').disabled = true;
