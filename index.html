@@ -1787,7 +1787,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v97'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v98'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -3657,8 +3657,14 @@
     const statusEl = document.getElementById('attach-upload-status');
     for(const file of files){
       if(statusEl) statusEl.textContent = `${file.name} 업로드 중...`;
-      const safeName = file.name.replace(/[^\w.\-가-힣]/g,'_');
-      const path = `${context}/${encodeURIComponent(rowKey)}/${Date.now()}_${safeName}`;
+      // Storage 저장 "경로"에는 한글/특수문자(회사명, 프리랜서명 등)가 들어가면
+      // Supabase Storage가 "Invalid key" 오류로 업로드 자체를 거부합니다.
+      // 실제 파일명(한글 포함)은 row_attachments.file_name에 그대로 저장해 화면에 표시하고,
+      // Storage 경로 자체는 영문/숫자만으로 구성된 안전한 값으로 만듭니다.
+      const extMatch = /\.[a-zA-Z0-9]{1,10}$/.exec(file.name);
+      const safeExt = extMatch ? extMatch[0] : '';
+      const safeId = Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,10);
+      const path = `${context}/${safeId}${safeExt}`;
       try {
         const { error: upErr } = await sb.storage.from(ATTACH_BUCKET).upload(path, file);
         if(upErr) throw upErr;
