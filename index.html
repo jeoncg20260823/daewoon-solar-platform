@@ -228,6 +228,11 @@
   table.editgrid th{ text-align:left; padding:10px 14px; background:var(--paper); color:var(--slate); font-weight:600; font-size:11.5px; border-bottom:1px solid var(--grid-line); white-space:nowrap; position:sticky; top:0; }
   table.editgrid td{ padding:0; border-bottom:1px solid #EEF2F7; border-right:1px solid #F3F6F4; }
   table.editgrid td[contenteditable="true"]{ padding:9px 14px; cursor:text; }
+  /* 첫 번째 컬럼(성명/회사명/프리랜서명/프로젝트명 등 메인키)은 수평 스크롤을 해도
+     항상 왼쪽에 고정되어 보이도록 고정(sticky) 처리합니다. */
+  table.editgrid td:first-child{ position:sticky; left:0; z-index:1; background:#fff; }
+  table.editgrid th:first-child{ position:sticky; left:0; z-index:3; }
+  table.editgrid td.readonly-cell:first-child{ background:var(--paper); }
   #grid-customers th:nth-child(1), #grid-customers td:nth-child(1){ min-width:150px; }
   #grid-customers th:nth-child(3), #grid-customers td:nth-child(3){ min-width:130px; }
   #grid-customers th:nth-child(9), #grid-customers td:nth-child(9){ min-width:130px; }
@@ -251,6 +256,7 @@
   @keyframes pulse{ 0%{opacity:1;} 50%{opacity:.25;} 100%{opacity:1;} }
   .cell-select{ width:100%; border:none; background:transparent; font-family:inherit; font-size:12.5px; padding:9px 14px; }
   .req{ color:var(--danger); margin-left:2px; }
+  .req-note{ color:var(--danger); font-size:11.5px; padding:8px 26px 0; }
   td.readonly-cell{ background:var(--paper); color:var(--slate); cursor:not-allowed; padding:9px 14px; }
   tr.row-locked td, tr.row-locked select{ color:var(--danger) !important; }
   tr.row-resigned td, tr.row-resigned select{ color:var(--danger) !important; text-decoration:line-through; }
@@ -849,6 +855,7 @@
       <span class="save-msg" id="save-msg-users"></span>
     </div>
   </div>
+  <div class="req-note screen-subheader">* 항목은 필수 입력입니다</div>
   <div class="filter-tabs" id="users-filters" style="flex-wrap:wrap;gap:10px;"></div>
   <div class="grid-content">
     <div class="grid-wrap">
@@ -1015,6 +1022,7 @@
       <span class="save-msg" id="save-msg-customers"></span>
     </div>
   </div>
+  <div class="req-note screen-subheader">* 항목은 필수 입력입니다</div>
   <div class="filter-tabs" id="customers-filters" style="flex-wrap:wrap;gap:10px;"></div>
   <div class="grid-content">
     <div class="grid-wrap">
@@ -1176,6 +1184,7 @@
       <span class="save-msg" id="save-msg-freelancers"></span>
     </div>
   </div>
+  <div class="req-note screen-subheader">* 항목은 필수 입력입니다</div>
   <div class="filter-tabs" id="freelancers-filters" style="flex-wrap:wrap;gap:10px;"></div>
   <div class="grid-content">
     <div class="grid-wrap">
@@ -1289,11 +1298,12 @@
   <div style="margin:14px 26px 0;padding:10px 14px;background:#FFF3DE;border-radius:8px;font-size:12px;color:var(--amber-dark);">
     보류·취소 요청은 각 사전/진행 프로젝트 관리 화면에서 접수됩니다. 이 화면에서는 접수된 요청을 검토하고 확정 처리합니다.
   </div>
+  <div class="req-note screen-subheader">* 항목은 필수 입력입니다</div>
   <div class="filter-tabs" id="holds-filters" style="flex-wrap:wrap;gap:10px;"></div>
   <div class="grid-content">
     <div class="grid-wrap">
       <table class="editgrid" id="grid-holds">
-        <tr><th>사전프로젝트번호</th><th>진행프로젝트번호</th><th>고객사명</th><th>영업프리랜서</th><th>영업담당</th><th>발생일자</th><th>보류취소사유</th><th>보고서</th><th>검토확정</th><th>확정일시</th><th>업데이트일시</th></tr>
+        <tr><th>사전프로젝트번호</th><th>진행프로젝트번호</th><th>고객사명</th><th>영업프리랜서</th><th>영업담당</th><th>발생일자<span class="req">*</span></th><th>보류취소사유<span class="req">*</span></th><th>보고서</th><th>검토확정</th><th>확정일시</th><th>업데이트일시</th></tr>
         <tr data-confirmed-at="2026-08-18T09:20:00.000Z">
           <td class="mono link-cell" onclick="go('dashboard');selectPreProject('PET-2026-0205','화영')">PET-2026-0205</td>
           <td class="mono" style="color:var(--slate);">-</td>
@@ -1777,7 +1787,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v96'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v97'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2205,9 +2215,14 @@
         password: tr.children[5].textContent.trim(),
         employment_status: statusSel ? statusSel.value : '재직',
         account_locked: lockSel ? lockSel.value === '잠금' : false,
-        approval_pin: pinBtn && pinBtn.dataset.pinSet === '1' ? '****' : null,
         updated_at: new Date().toISOString(),
       };
+      // 결재PIN은 이번 화면에서 새로 설정/변경한 경우에만 실제 값을 전송합니다.
+      // (변경하지 않았다면 필드 자체를 보내지 않아 DB에 저장된 기존 PIN이 그대로 유지됩니다.
+      //  화면에는 실제 PIN 값을 절대 다시 표시하지 않고 "설정됨/미설정"만 보여줍니다.)
+      if(pinBtn && pinBtn.dataset.pinValue){
+        record.approval_pin = pinBtn.dataset.pinValue;
+      }
       const existingId = tr.dataset.id;
       try {
         if(existingId){
@@ -2232,8 +2247,9 @@
   }
 
   // ---- 고객관리: Supabase 실데이터 로드/저장 ----
-  function renderCustomerRowHtml(c){
+  function renderCustomerRowHtml(c, attachCounts){
     const updated = c.updated_at ? new Date(c.updated_at).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    const count = attachCounts ? (attachCounts[c.company_name]||0) : 0;
     return `<tr data-id="${c.id}">
           <td contenteditable="true" class="link-cell">${c.company_name}</td>
           <td contenteditable="true">${c.ceo_name||''}</td>
@@ -2244,7 +2260,7 @@
           <td><select class="cell-select freelancer-select" data-value="${c.freelancer_name||''}"></select></td>
           <td><select class="cell-select sales-rep-select" data-value="${c.sales_rep||''}"></select></td>
           <td><span class="badge ok">-</span></td>
-          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
+          <td>${attachBtnHtml('customer', c.company_name, count)}</td>
           <td class="note-cell${c.note?'':' note-empty'}" onclick="openNoteEditor(this)">${c.note||''}</td>
           <td class="readonly-cell updated-cell">${updated}</td>
         </tr>`;
@@ -2256,8 +2272,9 @@
     try {
       const data = await sbSelectWithRetry('customers', 'company_name');
       if(!data) return false;
+      const attachCounts = await fetchAttachmentCounts('customer');
       const table = document.getElementById('grid-customers');
-      replaceGridRows(table, data.map(c => renderCustomerRowHtml(c)).join(''));
+      replaceGridRows(table, data.map(c => renderCustomerRowHtml(c, attachCounts)).join(''));
       populateFreelancerSelects();
       populateSalesRepSelects();
       syncCustomerStatusCells();
@@ -2313,11 +2330,12 @@
   }
 
   // ---- 영업프리랜서관리: Supabase 실데이터 로드/저장 ----
-  function renderFreelancerRowHtml(f){
+  function renderFreelancerRowHtml(f, attachCounts){
     const levelOpts = ['A','B','C','D','N'].map(o=>`<option${o===f.level?' selected':''}>${o}</option>`).join('');
     const statusOpts = `<option${f.status!=='은퇴'?' selected':''}>활동중</option><option${f.status==='은퇴'?' selected':''}>은퇴</option>`;
     const updated = f.updated_at ? new Date(f.updated_at).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
     const cls = f.status==='은퇴' ? ' class="row-resigned"' : '';
+    const count = attachCounts ? (attachCounts[f.name]||0) : 0;
     return `<tr${cls} data-id="${f.id}">
           <td contenteditable="true" class="link-cell" onclick="goToPersonProjects('${(f.name||'').replace(/'/g,"\\'")}')">${f.name}</td>
           <td contenteditable="true">${f.phone||''}</td>
@@ -2325,7 +2343,7 @@
           <td><select class="cell-select">${levelOpts}</select></td>
           <td><select class="cell-select" onchange="this.closest('tr').classList.toggle('row-resigned', this.value==='은퇴')">${statusOpts}</select></td>
           <td contenteditable="true">${f.email||''}</td>
-          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
+          <td>${attachBtnHtml('freelancer', f.name, count)}</td>
           <td class="note-cell${f.note?'':' note-empty'}" onclick="openNoteEditor(this)">${f.note||''}</td>
           <td class="readonly-cell updated-cell">${updated}</td>
         </tr>`;
@@ -2337,8 +2355,9 @@
     try {
       const data = await sbSelectWithRetry('freelancers', 'name');
       if(!data) return false;
+      const attachCounts = await fetchAttachmentCounts('freelancer');
       const table = document.getElementById('grid-freelancers');
-      replaceGridRows(table, data.map(f => renderFreelancerRowHtml(f)).join(''));
+      replaceGridRows(table, data.map(f => renderFreelancerRowHtml(f, attachCounts)).join(''));
       snapshotGrid('freelancers');
       return true;
     } catch(e){
@@ -2623,7 +2642,7 @@
   }
 
   // ---- 취소보류관리: Supabase 실데이터 로드/저장 ----
-  function renderHoldRowHtml(h){
+  function renderHoldRowHtml(h, attachCounts){
     const updated = h.updated_at ? new Date(h.updated_at).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
     const confirmedAt = h.confirmed_at ? new Date(h.confirmed_at).toLocaleString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
     const preNo = h.pre_project_no || '-';
@@ -2632,7 +2651,7 @@
     const progOnclick = progNo !== '-' ? `go('progress');selectProgressProject('${progNo}','${(h.company_name||'').replace(/'/g,"\\'")}')` : '';
     const preCell = preNo !== '-' ? `<td class="mono link-cell" onclick="${preOnclick}">${preNo}</td>` : `<td class="mono" style="color:var(--slate);">-</td>`;
     const progCell = progNo !== '-' ? `<td class="mono link-cell" onclick="${progOnclick}">${progNo}</td>` : `<td class="mono" style="color:var(--slate);">-</td>`;
-    const attachLabel = h.attachment_name ? `첨부보기 (1)` : `첨부보기 (0)`;
+    const count = attachCounts ? (attachCounts[h.id]||0) : 0;
     return `<tr data-id="${h.id}" data-confirmed-at="${h.confirmed_at||''}">
           ${preCell}
           ${progCell}
@@ -2641,7 +2660,7 @@
           <td contenteditable="true">${h.sales_rep||''}</td>
           <td contenteditable="true">${h.occurred_date||''}</td>
           <td contenteditable="true">${h.reason||''}</td>
-          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);" onclick="attachDemoFile(this)" data-files='${h.attachment_name?JSON.stringify([h.attachment_name]):'[]'}'>${attachLabel}</button></td>
+          <td>${attachBtnHtml('hold', h.id, count)}</td>
           <td><select class="cell-select" data-prev="${h.confirm_status||'대기'}" onchange="handleHoldConfirm(this)"><option${h.confirm_status!=='확정완료'?' selected':''}>대기</option><option${h.confirm_status==='확정완료'?' selected':''}>확정완료</option></select></td>
           <td class="readonly-cell hold-confirm-date">${confirmedAt}</td>
           <td class="readonly-cell updated-cell">${updated}</td>
@@ -2652,8 +2671,9 @@
     try {
       const { data, error } = await sb.from('hold_cancel_requests').select('*').order('occurred_date', {ascending:false});
       if(error || !data || !data.length) return false;
+      const attachCounts = await fetchAttachmentCounts('hold');
       const table = document.getElementById('grid-holds');
-      replaceGridRows(table, data.map(h => renderHoldRowHtml(h)).join(''));
+      replaceGridRows(table, data.map(h => renderHoldRowHtml(h, attachCounts)).join(''));
       document.querySelectorAll('#grid-holds tr').forEach(tr=>{
         if(tr.querySelector('th')) return;
         applyHoldRowLockState(tr);
@@ -2828,9 +2848,11 @@
       const { data, error } = await sb.from('forms').select('*').order('form_code');
       if(error || !data || !data.length) return false;
 
+      const attachCounts = await fetchAttachmentCounts('form');
       const gridTable = document.getElementById('grid-forms');
       const formsHtml = data.map(f => {
         const updated = f.updated_at ? new Date(f.updated_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+        const count = attachCounts[f.id]||0;
         return `<tr>
           <td class="mono">${f.form_code||''}</td>
           <td>${f.form_type||''}</td>
@@ -2838,7 +2860,7 @@
           <td>${f.version||''}</td>
           <td>${f.registered_date||''}</td>
           <td>${f.author||''}</td>
-          <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
+          <td>${attachBtnHtml('form', f.id, count)}</td>
           <td class="note-cell${f.note?'':' note-empty'}" onclick="openNoteEditor(this)">${f.note||''}</td>
           <td class="readonly-cell updated-cell">${updated}</td>
         </tr>`;
@@ -2940,6 +2962,7 @@
     if(which === 'users') ok = validateUserGrid();
     else if(which === 'customers') ok = validateCustomerGrid();
     else if(which === 'freelancers') ok = validateFreelancerGrid();
+    else if(which === 'holds') ok = validateHoldsGrid();
     if(!ok){
       showSavePopup('필수항목(*)을 모두 입력해 주세요.', true);
       return; // block save, keep buttons enabled
@@ -3074,6 +3097,25 @@
       const levelEmpty = !levelSel || !levelSel.value;
       levelTd.classList.toggle('cell-invalid', levelEmpty);
       if(levelEmpty){ allValid = false; if(!firstInvalid) firstInvalid = levelTd; }
+    });
+    if(firstInvalid) firstInvalid.scrollIntoView({block:'center', behavior:'smooth'});
+    return allValid;
+  }
+
+  function validateHoldsGrid(){
+    const table = document.getElementById('grid-holds');
+    let allValid = true;
+    let firstInvalid = null;
+    table.querySelectorAll('tr').forEach(tr=>{
+      if(tr.querySelector('th')) return;
+      const cells = tr.children;
+      // required: 5=발생일자 6=보류취소사유
+      [5,6].forEach(i=>{
+        const td = cells[i];
+        const empty = !td.textContent.trim();
+        td.classList.toggle('cell-invalid', empty);
+        if(empty){ allValid = false; if(!firstInvalid) firstInvalid = td; }
+      });
     });
     if(firstInvalid) firstInvalid.scrollIntoView({block:'center', behavior:'smooth'});
     return allValid;
@@ -3546,7 +3588,116 @@
   }
 
   // ---- 공용: 첨부파일 목록 팝업 ----
-  function openAttachList(btn){
+  // ---- 첨부파일: Supabase Storage('attachments' 버킷) + row_attachments 테이블 연동 ----
+  const ATTACH_BUCKET = 'attachments';
+  function attachBtnHtml(context, rowKey, count){
+    const label = count ? `📎 첨부 (${count})` : '📎 첨부';
+    const bg = count ? 'var(--success)' : 'var(--navy-3)';
+    const safeKey = (rowKey||'').replace(/"/g,'&quot;');
+    return `<button class="btn-mini pd-attach-btn" style="background:${bg};font-size:10px;padding:5px 8px;" onclick="openAttachList(this)" data-context="${context}" data-rowkey="${safeKey}">${label}</button>`;
+  }
+  async function fetchAttachmentCounts(context){
+    const counts = {};
+    if(!sb) return counts;
+    try {
+      const { data } = await sb.from('row_attachments').select('row_key').eq('context', context);
+      (data||[]).forEach(r=>{ counts[r.row_key] = (counts[r.row_key]||0) + 1; });
+    } catch(e){ console.warn('첨부파일 개수 조회 실패', e); }
+    return counts;
+  }
+  // JSON.stringify는 큰따옴표를 쓰므로, 큰따옴표로 감싼 HTML 속성(onclick="...") 안에
+  // 그대로 넣으면 속성이 중간에 끊깁니다. HTML 엔티티로 치환해 안전하게 넣습니다.
+  function attrJson(v){
+    return JSON.stringify(v).replace(/"/g, '&quot;');
+  }
+  function attachmentPublicUrl(path){
+    if(!sb) return '#';
+    const { data } = sb.storage.from(ATTACH_BUCKET).getPublicUrl(path);
+    return data ? data.publicUrl : '#';
+  }
+  async function openAttachList(btn){
+    window._pendingAttachBtn = btn;
+    const context = btn.dataset.context;
+    const rowKey = btn.dataset.rowkey;
+    // 아직 실제 저장소에 연결되지 않은 옛 데모 버튼(context 없음)은 기존 데모 동작을 유지합니다.
+    if(!context || !rowKey || !sb){
+      return openAttachListDemo(btn);
+    }
+    document.getElementById('modal-content').innerHTML = `<div class="modal-title">첨부 파일</div><div class="modal-sub">불러오는 중...</div>`;
+    document.getElementById('modal-overlay').classList.add('open');
+    let files = [];
+    try {
+      const { data } = await sb.from('row_attachments').select('*').eq('context', context).eq('row_key', rowKey).order('uploaded_at', {ascending:false});
+      files = data || [];
+    } catch(e){
+      console.warn('첨부파일 목록 조회 실패', e);
+    }
+    renderAttachModal(context, rowKey, files);
+  }
+  function renderAttachModal(context, rowKey, files){
+    const rows = files.length ? files.map(f=>{
+      const url = attachmentPublicUrl(f.storage_path);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 2px;border-bottom:1px solid var(--grid-line);font-size:12.5px;">
+        <a href="${url}" target="_blank" rel="noopener" style="color:var(--navy-3);text-decoration:underline;">📄 ${f.file_name}</a>
+        <button class="btn-mini" style="background:var(--danger);font-size:10px;padding:4px 8px;" onclick="deleteAttachmentFile('${f.id}', ${attrJson(f.storage_path)}, ${attrJson(context)}, ${attrJson(rowKey)})">삭제</button>
+      </div>`;
+    }).join('') : '<div style="color:var(--slate);font-size:12px;padding:8px 0;">첨부된 파일이 없습니다.</div>';
+    document.getElementById('modal-content').innerHTML = `
+      <div class="modal-title">첨부 파일</div>
+      <div class="modal-sub">파일은 Supabase Storage에 실제로 업로드/저장됩니다.</div>
+      <div id="attach-file-list" style="margin-bottom:12px;">${rows}</div>
+      <input type="file" id="attach-file-input" multiple style="display:none" onchange="handleAttachFileUpload(this, ${attrJson(context)}, ${attrJson(rowKey)})">
+      <button class="btn-mini" style="background:var(--navy-3);width:100%;" onclick="document.getElementById('attach-file-input').click()">+ 파일 선택하여 업로드</button>
+      <div id="attach-upload-status" style="font-size:11px;color:var(--slate);margin-top:6px;"></div>
+      <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">닫기</button></div>`;
+  }
+  async function handleAttachFileUpload(input, context, rowKey){
+    const files = Array.from(input.files || []);
+    if(!files.length) return;
+    const statusEl = document.getElementById('attach-upload-status');
+    for(const file of files){
+      if(statusEl) statusEl.textContent = `${file.name} 업로드 중...`;
+      const safeName = file.name.replace(/[^\w.\-가-힣]/g,'_');
+      const path = `${context}/${encodeURIComponent(rowKey)}/${Date.now()}_${safeName}`;
+      try {
+        const { error: upErr } = await sb.storage.from(ATTACH_BUCKET).upload(path, file);
+        if(upErr) throw upErr;
+        await sb.from('row_attachments').insert({ context, row_key: rowKey, file_name: file.name, storage_path: path, uploaded_by: CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.name : null });
+      } catch(e){
+        console.warn('파일 업로드 실패', e);
+        if(statusEl) statusEl.textContent = `업로드 실패: ${file.name} — Storage 버킷("${ATTACH_BUCKET}")이 준비되어 있는지 확인해 주세요.`;
+        continue;
+      }
+    }
+    if(statusEl) statusEl.textContent = '';
+    await refreshAttachButtonLabel(context, rowKey);
+    openAttachList(window._pendingAttachBtn);
+  }
+  async function deleteAttachmentFile(id, storagePath, context, rowKey){
+    try {
+      await sb.storage.from(ATTACH_BUCKET).remove([storagePath]);
+      await sb.from('row_attachments').delete().eq('id', id);
+    } catch(e){
+      console.warn('첨부파일 삭제 실패', e);
+    }
+    await refreshAttachButtonLabel(context, rowKey);
+    openAttachList(window._pendingAttachBtn);
+  }
+  async function refreshAttachButtonLabel(context, rowKey){
+    if(!sb) return;
+    try {
+      const { data } = await sb.from('row_attachments').select('id').eq('context', context).eq('row_key', rowKey);
+      const count = (data||[]).length;
+      document.querySelectorAll(`.pd-attach-btn[data-context="${context}"]`).forEach(b=>{
+        if(b.dataset.rowkey === rowKey){
+          b.textContent = count ? `📎 첨부 (${count})` : '📎 첨부';
+          b.style.background = count ? 'var(--success)' : 'var(--navy-3)';
+        }
+      });
+    } catch(e){ /* noop */ }
+  }
+  // ---- 첨부파일(레거시 데모 버튼용 — Storage 연결 전이거나 context가 없는 경우의 대체 동작) ----
+  function openAttachListDemo(btn){
     window._pendingAttachBtn = btn;
     const files = btn.dataset.files ? JSON.parse(btn.dataset.files) : [];
     document.getElementById('modal-content').innerHTML = `
@@ -3563,7 +3714,7 @@
     files.push(`문서_${files.length+1}.pdf`);
     btn.dataset.files = JSON.stringify(files);
     updateAttachBtnLabel(btn, files.length);
-    openAttachList(btn);
+    openAttachListDemo(btn);
   }
   function removeAttachFile(idx){
     const btn = window._pendingAttachBtn;
@@ -3571,7 +3722,7 @@
     files.splice(idx, 1);
     btn.dataset.files = JSON.stringify(files);
     updateAttachBtnLabel(btn, files.length);
-    openAttachList(btn);
+    openAttachListDemo(btn);
   }
   function updateAttachBtnLabel(btn, count){
     btn.innerHTML = count ? `📎 첨부 (${count})` : `📎 첨부`;
@@ -3639,11 +3790,32 @@
     draft[draft.length-1].stage = draft[draft.length-1].actualStart ? '진행중' : '예정';
     openProcessDetailModal(kind, draft);
   }
-  function confirmFinalStepApproval(){
+  // 결재PIN 실제 검증: DB(users.approval_pin)에 저장된 값과 대조합니다.
+  async function verifyApprovalPin(userName, pw){
+    if(sb){
+      try {
+        const { data } = await sb.from('users').select('approval_pin').eq('name', userName).maybeSingle();
+        if(data) return !!data.approval_pin && data.approval_pin === pw;
+      } catch(e){
+        console.warn('결재PIN 확인 실패(DB) — 화면 데이터로 대체 확인', e);
+      }
+    }
+    // DB 조회가 불가능한 경우의 폴백: 화면에는 실제 PIN 값이 없으므로 설정 여부만 확인합니다.
+    const row = Array.from(document.querySelectorAll('#grid-users tr')).find(tr=>{
+      const nameCell = tr.children[0];
+      return nameCell && nameCell.textContent.trim() === userName;
+    });
+    const pinBtn = row ? row.querySelector('.pin-btn') : null;
+    return !!(pinBtn && pinBtn.dataset.pinSet === '1');
+  }
+  async function confirmFinalStepApproval(){
     const pw = document.getElementById('final-approve-pw').value;
     const signPad = document.querySelector('#modal-content [data-signed]');
     if(!pw){ alert('결재암호를 입력해 주세요.'); return; }
     if(signPad.dataset.signed !== '1'){ alert('서명을 완료해 주세요.'); return; }
+    const actorName = CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.name : CURRENT_USER_NAME;
+    const okPin = await verifyApprovalPin(actorName, pw);
+    if(!okPin){ alert('결재PIN이 올바르지 않습니다. (사용자관리 화면에서 결재PIN이 설정되어 있는지 확인해 주세요.)'); return; }
     const { kind, draft } = window._pendingApprovalDraft;
     draft[draft.length-1].stage = '완료';
     openProcessDetailModal(kind, draft);
@@ -3694,6 +3866,53 @@
     setTimeout(()=>selectProgressProject(id, name), 50);
   }
   // ---- 데모: 로그인 사용자 전환 (권한별 화면 분리 시연용) ----
+  // 로그인 시 기기/접속이력 기록에 쓰이는 유틸
+  function getOrCreateDeviceId(){
+    try {
+      let id = localStorage.getItem('daewoon_device_id');
+      if(!id){
+        id = 'dev-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+        localStorage.setItem('daewoon_device_id', id);
+      }
+      return id;
+    } catch(e){
+      return 'dev-' + Date.now().toString(36); // localStorage 사용 불가 시(시크릿모드 등) 임시값
+    }
+  }
+  function describeDevice(){
+    const ua = navigator.userAgent || '';
+    let os = 'PC';
+    if(/iPhone|iPad/.test(ua)) os = 'iOS';
+    else if(/Android/.test(ua)) os = 'Android';
+    else if(/Mac OS X/.test(ua)) os = 'macOS';
+    else if(/Windows/.test(ua)) os = 'Windows';
+    let browser = '브라우저';
+    if(/Edg\//.test(ua)) browser = 'Edge';
+    else if(/Chrome\//.test(ua)) browser = 'Chrome';
+    else if(/Safari\//.test(ua) && !/Chrome/.test(ua)) browser = 'Safari';
+    else if(/Firefox\//.test(ua)) browser = 'Firefox';
+    return `${os} · ${browser}`;
+  }
+  // 로그인 성공 후: 최근로그인 시각 갱신, 접속이력 기록, 기기 등록(최초 기기는 자동승인)
+  async function recordLoginActivity(userName, email){
+    if(!sb) return;
+    try {
+      if(email) await sb.from('users').update({ last_login: new Date().toISOString() }).ilike('email', email);
+    } catch(e){ console.warn('최근로그인 갱신 실패', e); }
+    try {
+      await sb.from('login_history').insert({ user_name: userName, device_name: describeDevice() });
+    } catch(e){ console.warn('접속이력 기록 실패', e); }
+    try {
+      const deviceId = getOrCreateDeviceId();
+      const deviceLabel = `${describeDevice()} (${deviceId.slice(-6)})`;
+      const { data: existing } = await sb.from('registered_devices').select('id').eq('user_name', userName).eq('device_name', deviceLabel).maybeSingle();
+      if(!existing){
+        const { data: anyDevice } = await sb.from('registered_devices').select('id').eq('user_name', userName).limit(1).maybeSingle();
+        const status = anyDevice ? '대기' : '승인'; // 그 사용자의 첫 기기는 자동 승인
+        await sb.from('registered_devices').insert({ user_name: userName, device_name: deviceLabel, status });
+      }
+    } catch(e){ console.warn('기기 등록 실패', e); }
+  }
   async function doLogin(){
     const email = (document.getElementById('login-email').value || '').trim().toLowerCase();
     const pw = (document.getElementById('login-password').value || '').trim();
@@ -3704,13 +3923,14 @@
     // 1순위: 실제 Supabase 데이터베이스 조회
     if(sb){
       try {
-        const { data, error } = await sb.from('users').select('name,position,system_roles,employment_status')
+        const { data, error } = await sb.from('users').select('name,position,system_roles,employment_status,email')
           .ilike('email', email).eq('password', pw).limit(1).maybeSingle();
         if(!error && data && data.employment_status === '재직'){
           matched = {
             name: data.name,
             position: data.position,
             roles: (data.system_roles || '').split(',').map(s=>s.trim()).filter(Boolean),
+            email: data.email,
           };
         }
       } catch(e){
@@ -3737,6 +3957,7 @@
           name: row.children[0].textContent.trim(),
           roles: roleCell ? (roleCell.dataset.roles||'').split(',') : [],
           position: posSel ? posSel.value : '',
+          email: row.children[3].textContent.trim(),
         };
       }
     }
@@ -3747,6 +3968,7 @@
     }
     if(errEl) errEl.style.display = 'none';
     CURRENT_LOGIN_USER = matched;
+    recordLoginActivity(matched.name, matched.email); // 백그라운드로 최근로그인/접속이력/기기 등록
     renderSidebars();
     go('bizdash');
   }
@@ -3936,7 +4158,7 @@
       <td><input type="date" class="pd-actual-start" value="${r.actualStart}" style="${dateStyle}" onchange="syncStageFromDates(this.closest('tr'))"></td>
       <td><input type="date" class="pd-actual-end" value="${r.actualEnd}" style="${dateStyle}" onchange="syncStageFromDates(this.closest('tr'))"></td>
       <td contenteditable="true" style="min-width:80px;">${r.note}</td>
-      <td style="white-space:nowrap;"><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)">📎 첨부</button></td>
+      <td style="white-space:nowrap;">${attachBtnHtml(kind==='pre' ? 'pre_step' : 'prog_step', `${id}_${r.order}`, 0)}</td>
     </tr>`).join('');
 
     const finalLabel = kind==='pre' ? '계약 완료' : '상업운전개시';
@@ -4690,27 +4912,12 @@
   }
 
   // ---- 사전프로젝트 계약완료: 결재암호/서명 후 진행프로젝트 생성으로 연결 ----
-  const USER_DEVICES = {
-    '전창길':[{name:'iPhone 15 (개인)', status:'승인'}],
-    '김대호':[{name:'iPhone 15 Pro (개인)', status:'승인'}],
-    '권순봉':[{name:'Galaxy S23 (개인)', status:'승인'}],
-    '김영훈':[{name:'iPhone 14 (현장)', status:'승인'},{name:'iPad (사무실)', status:'대기'}],
-    '이상화':[{name:'Galaxy S24 (현장)', status:'승인'}],
-    '김정훈':[{name:'iPhone 13 (개인)', status:'승인'}],
-    '김상철':[{name:'iPhone 15 (개인)', status:'승인'}],
-    '장기영':[{name:'Galaxy S23 (개인)', status:'승인'}],
-  };
-  function approveDeviceDemo(btn){
-    btn.closest('td').innerHTML = '-';
-    btn.closest('tr').children[1].innerHTML = '<span class="badge ok">승인</span>';
-  }
-
   // ---- 사용자관리: 결재PIN 설정/변경 ----
   function openPinEditor(btn){
     window._pendingPinBtn = btn;
     document.getElementById('modal-content').innerHTML = `
       <div class="modal-title">결재PIN ${btn.dataset.pinSet==='1' ? '변경' : '설정'}</div>
-      <div class="modal-sub">보류·취소 확정, 계약완료 등 중요 결재 시 사용됩니다. 로그인 비밀번호와는 별개로 관리됩니다. 숫자 4~6자리로 설정해 주세요.</div>
+      <div class="modal-sub">계약완료, 상업운전개시 확정 등 중요 결재 단계에서 본인 확인용으로 사용되는 암호입니다. 로그인 비밀번호와는 별개로 관리됩니다. 숫자 4~6자리로 설정해 주세요. (여기서 저장한 뒤, 화면 상단의 "저장" 버튼을 한 번 더 눌러야 실제로 반영됩니다.)</div>
       <div style="margin-bottom:12px;">
         <label style="font-size:11.5px;color:var(--slate);display:block;margin-bottom:5px;">새 결재PIN</label>
         <input type="password" id="pin-editor-input" maxlength="6" placeholder="숫자 4~6자리" style="width:100%;padding:9px 12px;border:1px solid var(--grid-line);border-radius:7px;font-size:13px;letter-spacing:3px;">
@@ -4732,27 +4939,51 @@
     if(pin !== confirm){ alert('PIN이 서로 일치하지 않습니다.'); return; }
     const btn = window._pendingPinBtn;
     btn.dataset.pinSet = '1';
+    btn.dataset.pinValue = pin; // 실제 저장 시 함께 전송 (화면에는 다시 표시하지 않음)
     btn.textContent = '설정됨';
     btn.style.background = 'var(--success)';
     btn.dispatchEvent(new Event('change', { bubbles: true })); // 상단 저장 버튼 활성화 신호
     closeModal();
   }
 
-  function openDeviceModal(userName){
-    const devices = USER_DEVICES[userName] || [];
-    const rows = devices.map(d=>{
-      const statusCell = d.status==='승인' ? '<span class="badge ok">승인</span>' : '<span class="badge wait">대기</span>';
-      const actionCell = d.status==='대기' ? '<button class="btn-mini" onclick="approveDeviceDemo(this)">승인</button>' : '-';
-      return `<tr><td>${d.name}</td><td>${statusCell}</td><td>${actionCell}</td></tr>`;
-    }).join('') || '<tr><td colspan="3" style="color:var(--slate)">등록된 기기가 없습니다.</td></tr>';
+  // ---- 사용자관리: 등록기기 조회/승인 (registered_devices 테이블 연동) ----
+  async function openDeviceModal(userName){
     document.getElementById('modal-content').innerHTML = `
       <div class="modal-title">${userName} — 등록기기</div>
-      <div class="modal-sub">새 기기 로그인 시 여기서 승인/거부할 수 있습니다.</div>
-      <table><tr><th>기기정보</th><th>승인상태</th><th></th></tr>${rows}</table>
+      <div class="modal-sub">불러오는 중...</div>`;
+    document.getElementById('modal-overlay').classList.add('open');
+    let devices = [];
+    if(sb){
+      try {
+        const { data } = await sb.from('registered_devices').select('*').eq('user_name', userName).order('registered_at', {ascending:false});
+        devices = data || [];
+      } catch(e){
+        console.warn('기기 목록 조회 실패', e);
+      }
+    }
+    const rows = devices.map(d=>{
+      const statusCell = d.status==='승인' ? '<span class="badge ok">승인</span>' : '<span class="badge wait">대기</span>';
+      const actionCell = d.status==='대기' ? `<button class="btn-mini" onclick="approveDevice('${d.id}', this)">승인</button>` : '-';
+      const when = d.registered_at ? new Date(d.registered_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+      return `<tr><td>${d.device_name}</td><td>${statusCell}</td><td class="readonly-cell" style="font-size:11px;">${when}</td><td>${actionCell}</td></tr>`;
+    }).join('') || '<tr><td colspan="4" style="color:var(--slate)">등록된 기기가 없습니다. (로그인 시 자동으로 등록됩니다.)</td></tr>';
+    document.getElementById('modal-content').innerHTML = `
+      <div class="modal-title">${userName} — 등록기기</div>
+      <div class="modal-sub">이 사용자가 로그인한 기기 목록입니다. 처음 사용하는 브라우저/기기로 로그인하면 자동으로 등록되며, 그 사용자의 첫 기기는 자동 승인되고 이후 새로 추가되는 기기는 "대기" 상태로 등록되어 이 화면에서 승인해야 합니다. (참고용 기록이며, 현재 버전에서는 "대기" 상태여도 로그인 자체가 막히지는 않습니다.)</div>
+      <table><tr><th>기기정보</th><th>승인상태</th><th>등록일시</th><th></th></tr>${rows}</table>
       <div class="modal-actions"><button class="btn-cancel" onclick="closeModal()">닫기</button></div>`;
     document.getElementById('modal-overlay').classList.add('open');
   }
-
+  async function approveDevice(id, btn){
+    if(sb){
+      try { await sb.from('registered_devices').update({status:'승인'}).eq('id', id); }
+      catch(e){ console.warn('기기 승인 실패(DB)', e); }
+    }
+    if(btn){
+      btn.closest('td').innerHTML = '-';
+      btn.closest('tr').children[1].innerHTML = '<span class="badge ok">승인</span>';
+    }
+  }
   // ---- mobile sub-screens: login / list / closing ----
   function syncFieldMobileUser(){
     const name = CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.name : '김영훈';
