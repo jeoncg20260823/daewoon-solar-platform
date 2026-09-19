@@ -1178,7 +1178,7 @@
   <div class="grid-content">
     <div class="grid-wrap">
       <table class="editgrid" id="grid-freelancers">
-        <tr><th>성명</th><th>연락처</th><th>활동지역</th><th>레벨</th><th>활동상태</th><th>이메일</th><th>첨부</th><th>특이사항</th><th>업데이트일시</th></tr>
+        <tr><th>성명<span class="req">*</span></th><th>연락처<span class="req">*</span></th><th>활동지역<span class="req">*</span></th><th>레벨<span class="req">*</span></th><th>활동상태</th><th>이메일</th><th>첨부</th><th>특이사항</th><th>업데이트일시</th></tr>
         <tr>
           <td class="link-cell" onclick="goToPersonProjects('이만수')">이만수</td>
           <td contenteditable="true">010-3508-8496</td>
@@ -1775,7 +1775,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v92'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v93'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2886,6 +2886,7 @@
     let ok = true;
     if(which === 'users') ok = validateUserGrid();
     else if(which === 'customers') ok = validateCustomerGrid();
+    else if(which === 'freelancers') ok = validateFreelancerGrid();
     if(!ok){
       showSavePopup('필수항목(*)을 모두 입력해 주세요.', true);
       return; // block save, keep buttons enabled
@@ -2996,6 +2997,30 @@
       const salesEmpty = !salesSel || !salesSel.value;
       salesTd.classList.toggle('cell-invalid', salesEmpty);
       if(salesEmpty){ allValid = false; if(!firstInvalid) firstInvalid = salesTd; }
+    });
+    if(firstInvalid) firstInvalid.scrollIntoView({block:'center', behavior:'smooth'});
+    return allValid;
+  }
+
+  function validateFreelancerGrid(){
+    const table = document.getElementById('grid-freelancers');
+    let allValid = true;
+    let firstInvalid = null;
+    table.querySelectorAll('tr').forEach(tr=>{
+      if(tr.querySelector('th')) return;
+      const cells = tr.children;
+      // required: 0=성명 1=연락처 2=활동지역 (text) / 3=레벨 (select)
+      [0,1,2].forEach(i=>{
+        const td = cells[i];
+        const empty = !td.textContent.trim();
+        td.classList.toggle('cell-invalid', empty);
+        if(empty){ allValid = false; if(!firstInvalid) firstInvalid = td; }
+      });
+      const levelTd = cells[3];
+      const levelSel = levelTd.querySelector('select');
+      const levelEmpty = !levelSel || !levelSel.value;
+      levelTd.classList.toggle('cell-invalid', levelEmpty);
+      if(levelEmpty){ allValid = false; if(!firstInvalid) firstInvalid = levelTd; }
     });
     if(firstInvalid) firstInvalid.scrollIntoView({block:'center', behavior:'smooth'});
     return allValid;
