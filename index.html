@@ -26,12 +26,18 @@
     --radius:10px;
   }
   *{box-sizing:border-box;}
+  html, body{ height:100%; }
   body{
     margin:0;
     background:var(--paper);
     color:var(--ink);
     font-family:'Noto Sans KR','Pretendard','Apple SD Gothic Neo',sans-serif;
     -webkit-font-smoothing:antialiased;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
   }
   .display{font-family:'Space Grotesk','Noto Sans KR',sans-serif;}
   .mono{font-family:'IBM Plex Mono',monospace;}
@@ -43,6 +49,7 @@
     padding:10px 14px;
     background:var(--navy);
     flex-wrap:wrap;
+    flex-shrink:0;
   }
   .demo-nav button{
     font-family:inherit;
@@ -59,8 +66,9 @@
   .demo-nav button.active{ background:var(--amber); color:var(--navy); border-color:var(--amber); font-weight:700; }
 
   .screen{ display:none; min-height:640px; }
-  .screen.active{ display:block; }
-  #screen-welcome.active, #screen-closing.active{ display:flex; }
+  .screen.active{ display:block; flex:1; min-height:0; overflow:hidden; }
+  #screen-welcome.active, #screen-closing.active{ display:flex; overflow-y:auto; }
+  .screen-flex-row{ height:100%; }
 
   /* ==================== Solar-panel grid mark (signature) ==================== */
   .panel-mark{ display:inline-grid; grid-template-columns:repeat(3,6px); grid-template-rows:repeat(2,6px); gap:2px; vertical-align:middle; }
@@ -106,7 +114,7 @@
   .welcome-foot{ margin-top:22px; color:rgba(255,255,255,0.35); font-size:11.5px; }
 
   /* ==================== 2. OFFICE DASHBOARD ==================== */
-  .sidebar{ width:220px; background:var(--navy); color:#fff; flex-shrink:0; padding:20px 0; display:flex; flex-direction:column; min-height:640px; }
+  .sidebar{ width:220px; background:var(--navy); color:#fff; flex-shrink:0; padding:20px 0; display:flex; flex-direction:column; min-height:640px; overflow-y:auto; }
   .side-user{ display:flex; align-items:center; gap:10px; padding:14px 18px; border-top:1px solid rgba(255,255,255,0.1); }
   .side-user-avatar{ width:30px; height:30px; border-radius:50%; background:var(--amber); color:var(--navy); display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; flex-shrink:0; }
   .side-user-name{ font-size:12.5px; font-weight:700; }
@@ -122,7 +130,12 @@
   .side-item.disabled:hover{ background:transparent; color:rgba(255,255,255,0.32); }
   .soon{ font-size:9.5px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.4); padding:2px 6px; border-radius:999px; font-weight:600; }
 
-  .main{ flex:1; min-width:0; }
+  .main{ flex:1; min-width:0; height:100%; overflow-y:auto; overflow-x:hidden; }
+  .main::-webkit-scrollbar{ width:14px; }
+  .main::-webkit-scrollbar-track{ background:var(--paper); }
+  .main::-webkit-scrollbar-thumb{ background:var(--navy-3); border-radius:8px; border:3px solid var(--paper); }
+  .main::-webkit-scrollbar-thumb:hover{ background:var(--navy); }
+  .main{ scrollbar-width:auto; scrollbar-color:var(--navy-3) var(--paper); scrollbar-gutter:stable; }
   .topbar{ display:flex; align-items:center; justify-content:space-between; padding:14px 26px; background:#fff; border-bottom:1px solid var(--grid-line); }
   .topbar-title{ font-size:16px; font-weight:700; }
   .topbar-user{ display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--slate); }
@@ -227,6 +240,8 @@
   #grid-holds th:nth-child(9), #grid-holds td:nth-child(9){ min-width:130px; }
   #grid-holds th:nth-child(10), #grid-holds td:nth-child(10){ min-width:150px; }
   #grid-customers th:nth-child(6), #grid-customers td:nth-child(6){ min-width:280px; }
+  #grid-customers th:nth-child(7), #grid-customers td:nth-child(7){ min-width:110px; }
+  #grid-customers th:nth-child(8), #grid-customers td:nth-child(8){ min-width:110px; }
   table.editgrid td[contenteditable="true"]:focus{ outline:2px solid var(--navy-3); outline-offset:-2px; background:#F2FBF6; }
   table.editgrid tr:hover td{ background:#FAFEFB; }
   .urgent-badge{ display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700; background:#FCE9E9; color:var(--danger); cursor:pointer; }
@@ -393,7 +408,7 @@
 
 <!-- ============ 2. DASHBOARD ============ -->
 <div class="screen grid-screen" id="screen-dashboard">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="dashboard"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -592,7 +607,7 @@
 
 <!-- ============ 사업현황 대시보드 (시스템관리자·대표 전용) ============ -->
 <div class="screen grid-screen" id="screen-bizdash">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="bizdash"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -820,7 +835,7 @@
 
 <!-- ============ 5. 사용자관리 ============ -->
 <div class="screen grid-screen" id="screen-users">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="users"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -986,7 +1001,7 @@
 
 <!-- ============ 6. 고객관리 ============ -->
 <div class="screen grid-screen" id="screen-customers">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="customers"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -1147,7 +1162,7 @@
 
 <!-- ============ 7. 영업프리랜서관리 ============ -->
 <div class="screen grid-screen" id="screen-freelancers">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="freelancers"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -1258,7 +1273,7 @@
 
 <!-- ============ 8. 취소보류 프로젝트 관리 ============ -->
 <div class="screen grid-screen" id="screen-holds">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="holds"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -1320,7 +1335,7 @@
 
 <!-- ============ 9. 양식 관리 ============ -->
 <div class="screen grid-screen" id="screen-manhours">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="manhours"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -1368,7 +1383,7 @@
 </div>
 
 <div class="screen grid-screen" id="screen-forms">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="forms"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -1446,7 +1461,7 @@
 
 <!-- ============ 10. 진행 프로젝트 관리 ============ -->
 <div class="screen grid-screen" id="screen-progress">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="progress"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -1629,7 +1644,7 @@
 
 <!-- ============ 11. 자료 조회 ============ -->
 <div class="screen grid-screen" id="screen-docs">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="docs"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -1697,7 +1712,7 @@
 
 <!-- ============ 12. 양식 조회 ============ -->
 <div class="screen grid-screen" id="screen-formsview">
-  <div style="display:flex;width:100%;">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
     <div class="sidebar" data-active="formsview"></div>
     <div class="main">
   <div class="grid-toolbar">
@@ -1760,7 +1775,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v90'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v92'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
