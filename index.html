@@ -1777,7 +1777,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v95'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v96'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2153,6 +2153,20 @@
     }
     return null;
   }
+  // 목록 화면(그리드) 새로고침 공통 유틸.
+  // 기존에는 각 화면에서 `table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove())`로
+  // 헤더를 제외한 행을 지운 뒤 `table.insertAdjacentHTML('beforeend', ...)`으로 행을 하나씩
+  // table 요소에 직접 추가했습니다. 그런데 <table>에 insertAdjacentHTML로 <tr> 문자열을 넣으면
+  // 브라우저가 그때마다 새로운 <tbody>를 암묵적으로 만들어 감싸버려서, 두 번째 새로고침부터는
+  // "헤더가 아닌 행"을 지우는 선택자가 (각 행이 자기만의 새 tbody 안에서 "첫 번째 자식"이 되어버려)
+  // 더 이상 아무것도 지우지 못하는 문제가 있었습니다. 그 결과 다른 메뉴로 이동했다가
+  // 돌아올 때마다(=목록을 다시 불러올 때마다) 데이터가 계속 이중, 삼중으로 쌓여 보였습니다.
+  // → 항상 같은 <tbody> 하나만 사용하도록 고정해서 근본적으로 해결합니다.
+  function replaceGridRows(table, rowsHtml){
+    const tbody = table.tBodies[0] || table;
+    Array.from(tbody.children).slice(1).forEach(r=>r.remove());
+    if(rowsHtml) tbody.insertAdjacentHTML('beforeend', rowsHtml);
+  }
   let _usersLoading = false;
   async function loadUsersFromSupabase(){
     if(!sb || _usersLoading) return false;
@@ -2161,8 +2175,7 @@
       const data = await sbSelectWithRetry('users', 'name');
       if(!data) return false;
       const table = document.getElementById('grid-users');
-      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
-      data.forEach(u => { table.insertAdjacentHTML('beforeend', renderUserRowHtml(u)); });
+      replaceGridRows(table, data.map(u => renderUserRowHtml(u)).join(''));
       bindRowStatusSelects();
       snapshotGrid('users');
       return true;
@@ -2244,8 +2257,7 @@
       const data = await sbSelectWithRetry('customers', 'company_name');
       if(!data) return false;
       const table = document.getElementById('grid-customers');
-      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
-      data.forEach(c => { table.insertAdjacentHTML('beforeend', renderCustomerRowHtml(c)); });
+      replaceGridRows(table, data.map(c => renderCustomerRowHtml(c)).join(''));
       populateFreelancerSelects();
       populateSalesRepSelects();
       syncCustomerStatusCells();
@@ -2326,8 +2338,7 @@
       const data = await sbSelectWithRetry('freelancers', 'name');
       if(!data) return false;
       const table = document.getElementById('grid-freelancers');
-      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
-      data.forEach(f => { table.insertAdjacentHTML('beforeend', renderFreelancerRowHtml(f)); });
+      replaceGridRows(table, data.map(f => renderFreelancerRowHtml(f)).join(''));
       snapshotGrid('freelancers');
       return true;
     } catch(e){
@@ -2436,11 +2447,7 @@
       });
 
       const table = document.getElementById('grid-pre-list');
-      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
-      infoData.forEach(p => {
-        const cust = custMap[p.company_name] || {};
-        table.insertAdjacentHTML('beforeend', renderPreProjectRowHtml(p, cust));
-      });
+      replaceGridRows(table, infoData.map(p => renderPreProjectRowHtml(p, custMap[p.company_name] || {})).join(''));
       populateSalesRepSelects();
       populateRoleLinkedSelects();
       syncAllPreRows();
@@ -2571,11 +2578,7 @@
       });
 
       const table = document.getElementById('grid-progress');
-      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
-      infoData.forEach(p => {
-        const preInfo = preMap[p.pre_project_no] || {};
-        table.insertAdjacentHTML('beforeend', renderProgProjectRowHtml(p, preInfo));
-      });
+      replaceGridRows(table, infoData.map(p => renderProgProjectRowHtml(p, preMap[p.pre_project_no] || {})).join(''));
       populateRoleLinkedSelects();
       syncAllProgRows();
       renderStepChips('progress-step-chips','grid-progress', PROG_STEPS, 'data-step', applyProgressFilter);
@@ -2650,8 +2653,7 @@
       const { data, error } = await sb.from('hold_cancel_requests').select('*').order('occurred_date', {ascending:false});
       if(error || !data || !data.length) return false;
       const table = document.getElementById('grid-holds');
-      table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
-      data.forEach(h => { table.insertAdjacentHTML('beforeend', renderHoldRowHtml(h)); });
+      replaceGridRows(table, data.map(h => renderHoldRowHtml(h)).join(''));
       document.querySelectorAll('#grid-holds tr').forEach(tr=>{
         if(tr.querySelector('th')) return;
         applyHoldRowLockState(tr);
@@ -2827,10 +2829,9 @@
       if(error || !data || !data.length) return false;
 
       const gridTable = document.getElementById('grid-forms');
-      gridTable.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
-      data.forEach(f => {
+      const formsHtml = data.map(f => {
         const updated = f.updated_at ? new Date(f.updated_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
-        gridTable.insertAdjacentHTML('beforeend', `<tr>
+        return `<tr>
           <td class="mono">${f.form_code||''}</td>
           <td>${f.form_type||''}</td>
           <td>${f.form_name||''}</td>
@@ -2840,8 +2841,9 @@
           <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
           <td class="note-cell${f.note?'':' note-empty'}" onclick="openNoteEditor(this)">${f.note||''}</td>
           <td class="readonly-cell updated-cell">${updated}</td>
-        </tr>`);
-      });
+        </tr>`;
+      }).join('');
+      replaceGridRows(gridTable, formsHtml);
 
       const listEl = document.getElementById('formsview-list');
       listEl.innerHTML = '';
