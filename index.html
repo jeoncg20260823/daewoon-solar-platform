@@ -1777,7 +1777,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v94'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v95'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2140,11 +2140,26 @@
           <td>${deviceBtn}</td>
         </tr>`;
   }
+  // 목록 조회가 일시적인 네트워크 지연/오류로 실패하면, 화면에는 이전(또는 데모) 데이터가
+  // 그대로 남아있게 되어 이후 "저장"을 누를 때 id 없는 행을 기준으로 잘못 처리될 위험이 있습니다.
+  // 그래서 조회가 비어있거나 실패하면 짧게 한 번 더 재시도합니다.
+  async function sbSelectWithRetry(table, orderCol){
+    for(let attempt=0; attempt<2; attempt++){
+      try {
+        const { data, error } = await sb.from(table).select('*').order(orderCol);
+        if(!error && data && data.length) return data;
+      } catch(e){ /* 재시도로 넘어감 */ }
+      if(attempt === 0) await new Promise(r=>setTimeout(r, 500));
+    }
+    return null;
+  }
+  let _usersLoading = false;
   async function loadUsersFromSupabase(){
-    if(!sb) return false;
+    if(!sb || _usersLoading) return false;
+    _usersLoading = true;
     try {
-      const { data, error } = await sb.from('users').select('*').order('name');
-      if(error || !data || !data.length) return false;
+      const data = await sbSelectWithRetry('users', 'name');
+      if(!data) return false;
       const table = document.getElementById('grid-users');
       table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
       data.forEach(u => { table.insertAdjacentHTML('beforeend', renderUserRowHtml(u)); });
@@ -2154,6 +2169,8 @@
     } catch(e){
       console.warn('사용자 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
       return false;
+    } finally {
+      _usersLoading = false;
     }
   }
   async function saveUsersToSupabase(){
@@ -2183,8 +2200,17 @@
         if(existingId){
           await sb.from('users').update(record).eq('id', existingId);
         } else {
-          const { data } = await sb.from('users').insert(record).select('id').single();
-          if(data) tr.dataset.id = data.id;
+          // 화면에 id가 비어있는 상태(최초 로드 지연/실패 등)에서 저장이 눌린 경우를 대비해,
+          // 새로 만들기 전에 이메일(고유값)로 이미 존재하는 행이 있는지 먼저 확인합니다.
+          // → 이 확인 없이 바로 insert하면 같은 사용자가 중복으로 생성될 수 있었습니다.
+          const { data: found } = await sb.from('users').select('id').eq('email', record.email).maybeSingle();
+          if(found && found.id){
+            await sb.from('users').update(record).eq('id', found.id);
+            tr.dataset.id = found.id;
+          } else {
+            const { data } = await sb.from('users').insert(record).select('id').single();
+            if(data) tr.dataset.id = data.id;
+          }
         }
       } catch(e){
         console.warn('사용자 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
@@ -2210,11 +2236,13 @@
           <td class="readonly-cell updated-cell">${updated}</td>
         </tr>`;
   }
+  let _customersLoading = false;
   async function loadCustomersFromSupabase(){
-    if(!sb) return false;
+    if(!sb || _customersLoading) return false;
+    _customersLoading = true;
     try {
-      const { data, error } = await sb.from('customers').select('*').order('company_name');
-      if(error || !data || !data.length) return false;
+      const data = await sbSelectWithRetry('customers', 'company_name');
+      if(!data) return false;
       const table = document.getElementById('grid-customers');
       table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
       data.forEach(c => { table.insertAdjacentHTML('beforeend', renderCustomerRowHtml(c)); });
@@ -2226,6 +2254,8 @@
     } catch(e){
       console.warn('고객 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
       return false;
+    } finally {
+      _customersLoading = false;
     }
   }
   async function saveCustomersToSupabase(){
@@ -2253,8 +2283,16 @@
         if(existingId){
           await sb.from('customers').update(record).eq('id', existingId);
         } else {
-          const { data } = await sb.from('customers').insert(record).select('id').single();
-          if(data) tr.dataset.id = data.id;
+          // 회사명(사실상 고유값으로 쓰이고 있음)으로 기존 행을 먼저 확인 후,
+          // 있으면 갱신 / 없을 때만 신규 생성 → 중복 생성 방지
+          const { data: found } = await sb.from('customers').select('id').eq('company_name', record.company_name).maybeSingle();
+          if(found && found.id){
+            await sb.from('customers').update(record).eq('id', found.id);
+            tr.dataset.id = found.id;
+          } else {
+            const { data } = await sb.from('customers').insert(record).select('id').single();
+            if(data) tr.dataset.id = data.id;
+          }
         }
       } catch(e){
         console.warn('고객 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
@@ -2280,11 +2318,13 @@
           <td class="readonly-cell updated-cell">${updated}</td>
         </tr>`;
   }
+  let _freelancersLoading = false;
   async function loadFreelancersFromSupabase(){
-    if(!sb) return false;
+    if(!sb || _freelancersLoading) return false;
+    _freelancersLoading = true;
     try {
-      const { data, error } = await sb.from('freelancers').select('*').order('name');
-      if(error || !data || !data.length) return false;
+      const data = await sbSelectWithRetry('freelancers', 'name');
+      if(!data) return false;
       const table = document.getElementById('grid-freelancers');
       table.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
       data.forEach(f => { table.insertAdjacentHTML('beforeend', renderFreelancerRowHtml(f)); });
@@ -2293,6 +2333,8 @@
     } catch(e){
       console.warn('영업프리랜서 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
       return false;
+    } finally {
+      _freelancersLoading = false;
     }
   }
   async function saveFreelancersToSupabase(){
@@ -2319,8 +2361,15 @@
         if(existingId){
           await sb.from('freelancers').update(record).eq('id', existingId);
         } else {
-          const { data } = await sb.from('freelancers').insert(record).select('id').single();
-          if(data) tr.dataset.id = data.id;
+          // 성명으로 기존 행을 먼저 확인 후, 있으면 갱신 / 없을 때만 신규 생성 → 중복 생성 방지
+          const { data: found } = await sb.from('freelancers').select('id').eq('name', record.name).maybeSingle();
+          if(found && found.id){
+            await sb.from('freelancers').update(record).eq('id', found.id);
+            tr.dataset.id = found.id;
+          } else {
+            const { data } = await sb.from('freelancers').insert(record).select('id').single();
+            if(data) tr.dataset.id = data.id;
+          }
         }
       } catch(e){
         console.warn('영업프리랜서 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
