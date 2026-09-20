@@ -1405,12 +1405,13 @@
     <div class="grid-toolbar-title">양식 관리</div>
     <div class="toolbar-actions">
       <button class="btn-add" onclick="openFormRegisterModal()">+ 양식 등록</button>
+      <button class="btn-cancel" id="trash-toggle-forms" onclick="toggleTrash('forms')">🗑 휴지통</button>
     </div>
   </div>
   <div class="grid-content">
     <div class="grid-wrap">
       <table class="editgrid" id="grid-forms">
-        <tr><th>양식기호</th><th>양식구분</th><th>양식명</th><th>버전</th><th>등록일자</th><th>작성자</th><th>첨부</th><th>특이사항</th><th>업데이트일시</th></tr>
+        <tr><th>양식기호</th><th>양식구분</th><th>양식명</th><th>버전</th><th>등록일자</th><th>작성자</th><th>첨부</th><th>특이사항</th><th>업데이트일시</th><th>관리</th></tr>
         <tr>
           <td class="mono">CT-001</td>
           <td>계약</td>
@@ -1421,6 +1422,7 @@
           <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files='["임대차계약서_양식.docx"]'>📎 첨부 (1)</button></td>
           <td class="note-cell" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/01 10:00</td>
+          <td style="color:var(--slate);">-</td>
         </tr>
         <tr>
           <td class="mono">IS-001</td>
@@ -1432,6 +1434,7 @@
           <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files='["실사보고서_양식.xlsx"]'>📎 첨부 (1)</button></td>
           <td class="note-cell" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/05 15:30</td>
+          <td style="color:var(--slate);">-</td>
         </tr>
         <tr>
           <td class="mono">RP-001</td>
@@ -1443,8 +1446,9 @@
           <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files='["보류취소보고서_양식.docx"]'>📎 첨부 (1)</button></td>
           <td class="note-cell" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/06 09:00</td>
+          <td style="color:var(--slate);">-</td>
         </tr>
-      
+
         <tr>
           <td class="mono">PM-001</td>
           <td>인허가</td>
@@ -1455,6 +1459,7 @@
           <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files='["발전사업허가_신청서.hwp"]'>📎 첨부 (1)</button></td>
           <td class="note-cell" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/07 11:00</td>
+          <td style="color:var(--slate);">-</td>
         </tr>
         <tr>
           <td class="mono">IN-001</td>
@@ -1466,6 +1471,7 @@
           <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
           <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
           <td class="readonly-cell updated-cell">08/07 14:30</td>
+          <td style="color:var(--slate);">-</td>
         </tr>
       </table>
     </div>
@@ -1790,7 +1796,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v99'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v100'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1816,7 +1822,7 @@
   // 아직 새 컬럼이 없어 열 수가 안 맞을 수 있습니다. 실제 데이터는 곧이어 Supabase에서 다시 그려지지만,
   // 그 사이에도 표가 어긋나 보이지 않도록 부족한 만큼 빈 칸을 채워둡니다.
   (function padStaticDemoRowsForManageColumn(){
-    ['grid-customers','grid-freelancers','grid-holds','grid-users'].forEach(id=>{
+    ['grid-customers','grid-freelancers','grid-holds','grid-users','grid-forms'].forEach(id=>{
       const table = document.getElementById(id);
       if(!table || !table.rows.length) return;
       const headerCount = table.rows[0].children.length;
@@ -2898,17 +2904,25 @@
   }
 
   // ---- 양식관리 / 양식조회: Supabase 실데이터 로드 (읽기전용 참고자료 목록) ----
+  async function deleteFormRow(id, formName){ await softDeleteRow('form','forms', id, id, loadFormsFromSupabase); }
+  async function restoreFormRow(id){ await restoreRow('forms', id, loadFormsFromSupabase); }
+  async function permanentDeleteFormRow(id){ await permanentlyDeleteRow('form','forms', id, id, loadFormsFromSupabase); }
   async function loadFormsFromSupabase(){
     if(!sb) return false;
     try {
-      const { data, error } = await sb.from('forms').select('*').order('form_code');
-      if(error || !data || !data.length) return false;
+      const showTrash = !!GRID_TRASH_MODE.forms;
+      const { data, error } = await sb.from('forms').select('*').eq('is_deleted', showTrash).order('form_code');
+      if(error) throw error;
 
       const attachCounts = await fetchAttachmentCounts('form');
       const gridTable = document.getElementById('grid-forms');
-      const formsHtml = data.map(f => {
+      const formsHtml = (data||[]).map(f => {
         const updated = f.updated_at ? new Date(f.updated_at).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
         const count = attachCounts[f.id]||0;
+        const manage = manageCellHtml(showTrash,
+          `deleteFormRow('${f.id}')`,
+          `restoreFormRow('${f.id}')`,
+          `permanentDeleteFormRow('${f.id}')`);
         return `<tr>
           <td class="mono">${f.form_code||''}</td>
           <td>${f.form_type||''}</td>
@@ -2919,26 +2933,31 @@
           <td>${attachBtnHtml('form', f.id, count)}</td>
           <td class="note-cell${f.note?'':' note-empty'}" onclick="openNoteEditor(this)">${f.note||''}</td>
           <td class="readonly-cell updated-cell">${updated}</td>
+          <td>${manage}</td>
         </tr>`;
       }).join('');
       replaceGridRows(gridTable, formsHtml);
 
-      const listEl = document.getElementById('formsview-list');
-      listEl.innerHTML = '';
-      data.forEach(f => {
-        listEl.insertAdjacentHTML('beforeend', `<div class="list-card" data-classification="${f.form_type||''}" data-date="${f.registered_date||''}">
-          <div><div class="list-card-title">${f.form_name||''} (${f.form_code||''})</div><div class="list-card-sub">${f.version||''} · ${f.registered_date||''} 등록</div></div>
-          <button class="btn-dl">다운로드</button>
-        </div>`);
-      });
+      // "양식 조회"(읽기전용) 화면은 휴지통 토글과 무관하게 항상 삭제되지 않은 양식만 보여줘야 하므로,
+      // 관리 화면이 휴지통 보기 상태일 때는 이 목록을 건드리지 않습니다.
+      if(!showTrash){
+        const listEl = document.getElementById('formsview-list');
+        listEl.innerHTML = '';
+        data.forEach(f => {
+          listEl.insertAdjacentHTML('beforeend', `<div class="list-card" data-classification="${f.form_type||''}" data-date="${f.registered_date||''}">
+            <div><div class="list-card-title">${f.form_name||''} (${f.form_code||''})</div><div class="list-card-sub">${f.version||''} · ${f.registered_date||''} 등록</div></div>
+            <button class="btn-dl">다운로드</button>
+          </div>`);
+        });
 
-      const classSel = document.querySelector('#formsview-filters .doc-filter-fv[data-attr="classification"]');
-      if(classSel){
-        classSel.querySelectorAll('option:not(:first-child)').forEach(o=>o.remove());
-        const values = [...new Set(data.map(f=>f.form_type).filter(Boolean))];
-        values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; classSel.appendChild(o); });
+        const classSel = document.querySelector('#formsview-filters .doc-filter-fv[data-attr="classification"]');
+        if(classSel){
+          classSel.querySelectorAll('option:not(:first-child)').forEach(o=>o.remove());
+          const values = [...new Set(data.map(f=>f.form_type).filter(Boolean))];
+          values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; classSel.appendChild(o); });
+        }
+        if(typeof applyFormsviewFilters === 'function') applyFormsviewFilters();
       }
-      if(typeof applyFormsviewFilters === 'function') applyFormsviewFilters();
       return true;
     } catch(e){
       console.warn('양식 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
@@ -3355,7 +3374,8 @@
       <td>김대호</td>
       <td><button class="btn-mini pd-attach-btn" style="background:var(--navy-3);font-size:10px;padding:5px 8px;" onclick="attachDemoFile(this)" data-files="[]">📎 첨부</button></td>
       <td class="note-cell note-empty" onclick="openNoteEditor(this)"></td>
-      <td class="readonly-cell updated-cell">${nowStamp()}</td>`;
+      <td class="readonly-cell updated-cell">${nowStamp()}</td>
+      <td style="color:var(--slate);">-</td>`;
     (table.tBodies[0] || table).appendChild(tr);
     closeModal();
   }
@@ -3711,6 +3731,9 @@
     } else if(context === 'hold'){
       const att = await cntAttach('hold', key);
       push('첨부파일', att);
+    } else if(context === 'form'){
+      const att = await cntAttach('form', key);
+      push('첨부파일', att);
     } else if(context === 'user'){
       const [cust, hold, insp] = await Promise.all([
         cnt('customers','sales_rep', key),
@@ -3763,12 +3786,12 @@
     await reloadFn();
   }
   // 화면별 휴지통(삭제됨) 보기 상태
-  const GRID_TRASH_MODE = { customers:false, freelancers:false, holds:false };
+  const GRID_TRASH_MODE = { customers:false, freelancers:false, holds:false, forms:false };
   function toggleTrash(key){
     GRID_TRASH_MODE[key] = !GRID_TRASH_MODE[key];
     const btn = document.getElementById('trash-toggle-' + key);
     if(btn) btn.textContent = GRID_TRASH_MODE[key] ? '📋 목록으로' : '🗑 휴지통';
-    ({ customers:loadCustomersFromSupabase, freelancers:loadFreelancersFromSupabase, holds:loadHoldsFromSupabase })[key]();
+    ({ customers:loadCustomersFromSupabase, freelancers:loadFreelancersFromSupabase, holds:loadHoldsFromSupabase, forms:loadFormsFromSupabase })[key]();
   }
   // 삭제/복구/완전삭제 버튼 셀 (컨텍스트별 wrapper 함수는 각 화면 렌더 함수 아래에 정의됩니다)
   function manageCellHtml(showTrash, deleteFn, restoreFn, permaFn){
