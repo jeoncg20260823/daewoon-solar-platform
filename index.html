@@ -1798,7 +1798,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v101'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v103'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -2165,11 +2165,9 @@
     const deviceBtn = u.employment_status==='퇴사'
       ? `<button class="btn-mini" style="background:var(--navy-3);" disabled>-</button>`
       : `<button class="btn-mini" style="background:var(--navy-3);" onclick="openDeviceModal('${u.name}')">기기보기</button>`;
-    // 완전삭제는 시스템관리자만, 그리고 이미 "퇴사" 처리된 사용자에 한해서만 노출합니다.
-    // (재직 중인 사용자는 퇴사 처리로 논리삭제하는 것을 기본으로 합니다.)
-    const manage = (isSystemAdmin() && u.employment_status==='퇴사')
-      ? `<button class="btn-mini" style="background:var(--danger);font-size:10px;padding:4px 8px;" onclick="permanentDeleteUserRow('${u.id}', ${attrJson(u.name)})">완전삭제</button>`
-      : '<span style="color:var(--slate);">-</span>';
+    // v103: 백업/PITR이 없는 상태에서는 "완전삭제"가 너무 위험해서 화면에서 숨겼습니다.
+    // (DB 쪽에서도 delete 자체가 거부되도록 막아뒀습니다.) 퇴사 처리(논리삭제)만 계속 제공합니다.
+    const manage = '<span style="color:var(--slate);">-</span>';
     return `<tr${cls} data-id="${u.id}">
           <td contenteditable="true" class="link-cell">${u.name}</td>
           <td><select class="cell-select">${posOpts}</select></td>
@@ -3888,9 +3886,11 @@
   }
   // 삭제/복구/완전삭제 버튼 셀 (컨텍스트별 wrapper 함수는 각 화면 렌더 함수 아래에 정의됩니다)
   function manageCellHtml(showTrash, deleteFn, restoreFn, permaFn){
+    // v103: 백업/PITR이 없는 상태에서는 "완전삭제"가 너무 위험해서 화면에서 숨겼습니다.
+    // (DB 쪽에서도 delete 자체가 거부되도록 막아뒀습니다.) 휴지통 이동(복구 가능)만 계속 제공합니다.
     if(!isSystemAdmin()) return '<span style="color:var(--slate);">-</span>';
     if(showTrash){
-      return `<button class="btn-mini" style="background:var(--success);font-size:10px;padding:4px 8px;margin-right:4px;" onclick="${restoreFn}">복구</button><button class="btn-mini" style="background:var(--danger);font-size:10px;padding:4px 8px;" onclick="${permaFn}">완전삭제</button>`;
+      return `<button class="btn-mini" style="background:var(--success);font-size:10px;padding:4px 8px;" onclick="${restoreFn}">복구</button>`;
     }
     return `<button class="btn-mini" style="background:var(--danger);font-size:10px;padding:4px 8px;" onclick="${deleteFn}">삭제</button>`;
   }
