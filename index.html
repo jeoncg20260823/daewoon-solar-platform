@@ -1777,6 +1777,31 @@
   </div>
 </div>
 
+<div class="screen grid-screen" id="screen-auditlog">
+  <div class="screen-flex-row" style="display:flex;width:100%;">
+    <div class="sidebar" data-active="auditlog"></div>
+    <div class="main">
+  <div class="grid-toolbar">
+    <div class="grid-toolbar-title">변경이력</div>
+  </div>
+  <div class="filter-tabs" id="auditlog-filters" style="flex-wrap:wrap;gap:10px;align-items:center;">
+    <span style="font-size:11.5px;color:var(--slate);">테이블</span>
+    <select class="cell-select" id="auditlog-table-filter" style="border:1px solid var(--grid-line);border-radius:999px;padding:6px 12px;width:auto;" onchange="renderAuditLogTable()">
+      <option value="">전체</option>
+    </select>
+    <span style="font-size:11px;color:var(--slate);margin-left:auto;">최근 200건 · 시스템관리자 전용</span>
+  </div>
+  <div class="grid-content" id="auditlog-content">
+    <div class="grid-wrap">
+      <table class="editgrid" id="grid-auditlog">
+        <tr><th>일시</th><th>테이블</th><th>대상</th><th>작업</th><th>담당자</th><th>상세</th></tr>
+      </table>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ save 확인 팝업 ============ -->
 <div class="save-popup-overlay" id="save-popup-overlay" onclick="if(event.target===this) closeSavePopup();">
   <div class="save-popup-box" id="save-popup-box"></div>
@@ -1798,7 +1823,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v103'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v104'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1861,6 +1886,9 @@
       { key:'docs', label:'자료 조회' },
       { key:'formsview', label:'양식 조회' },
     ]},
+    { group:'감사 · 이력', items:[
+      { key:'auditlog', label:'변경이력', adminOnly:true },
+    ]},
   ];
   let CURRENT_LOGIN_USER = null; // {name, roles: [], position} — 데모: 로그인 사용자 전환용
   function renderSidebars(){
@@ -1868,8 +1896,10 @@
       const active = sb.dataset.active;
       let html = `<div class="side-brand"><img class="side-logo" src="data:image/png;base64,${LOGO_B64}" alt="대운이엔씨 로고"></div>`;
       SIDEBAR_ITEMS.forEach(group=>{
+        const visibleItems = group.items.filter(it => !it.adminOnly || isSystemAdmin());
+        if(!visibleItems.length) return;
         html += `<div class="side-group">${group.group}</div>`;
-        group.items.forEach(it=>{
+        visibleItems.forEach(it=>{
           const cls = it.key === active ? 'side-item active' : 'side-item';
           html += `<div class="${cls}" data-key="${it.key}" onclick="go('${it.key}')">${it.label}</div>`;
         });
@@ -1885,7 +1915,7 @@
   }
 </script>
 <script>
-  const map = { welcome:'screen-welcome', dashboard:'screen-dashboard', mobile:'screen-mobile', closing:'screen-closing', users:'screen-users', customers:'screen-customers', freelancers:'screen-freelancers', holds:'screen-holds', forms:'screen-forms', progress:'screen-progress', docs:'screen-docs', formsview:'screen-formsview', bizdash:'screen-bizdash', manhours:'screen-manhours' };
+  const map = { welcome:'screen-welcome', dashboard:'screen-dashboard', mobile:'screen-mobile', closing:'screen-closing', users:'screen-users', customers:'screen-customers', freelancers:'screen-freelancers', holds:'screen-holds', forms:'screen-forms', progress:'screen-progress', docs:'screen-docs', formsview:'screen-formsview', bizdash:'screen-bizdash', manhours:'screen-manhours', auditlog:'screen-auditlog' };
   const SCREEN_GRID_KEY = { users:'users', customers:'customers', freelancers:'freelancers', holds:'holds', progress:'progress', dashboard:'pre-list' };
   function discardUnsavedChanges(target){
     const key = SCREEN_GRID_KEY[target];
@@ -1927,6 +1957,7 @@
     if(target === 'manhours') loadManhoursFromSupabase();
     if(target === 'forms' || target === 'formsview') loadFormsFromSupabase();
     if(target === 'docs') loadDocumentsFromSupabase();
+    if(target === 'auditlog') loadAuditLogFromSupabase();
   }
   document.querySelectorAll('.demo-nav button').forEach(b=>{
     if(b.dataset.target) b.addEventListener('click', ()=>go(b.dataset.target));
@@ -2223,6 +2254,7 @@
       replaceGridRows(table, data.map(u => renderUserRowHtml(u)).join(''));
       bindRowStatusSelects();
       snapshotGrid('users');
+      snapshotRecords('user', 'name', data);
       return true;
     } catch(e){
       console.warn('사용자 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
@@ -2258,6 +2290,16 @@
       if(pinBtn && pinBtn.dataset.pinValue){
         record.approval_pin = pinBtn.dataset.pinValue;
       }
+      const userLabels = {position:'직책', system_roles:'시스템역할', email:'이메일', phone:'전화', employment_status:'재직상태', account_locked:'계정잠금'};
+      const prevUser = RECORD_SNAPSHOTS.user && RECORD_SNAPSHOTS.user[record.name];
+      if(prevUser){
+        const changes = diffFields(prevUser, record, userLabels);
+        if(changes.length) logAudit('users', record.name, 'update', changes);
+      } else {
+        logAudit('users', record.name, 'insert', diffFields({}, record, userLabels));
+      }
+      if(!RECORD_SNAPSHOTS.user) RECORD_SNAPSHOTS.user = {};
+      RECORD_SNAPSHOTS.user[record.name] = { ...record };
       const existingId = tr.dataset.id;
       try {
         if(existingId){
@@ -2323,6 +2365,7 @@
       populateSalesRepSelects();
       syncCustomerStatusCells();
       snapshotGrid('customers');
+      snapshotRecords('customer', 'company_name', data);
       return true;
     } catch(e){
       console.warn('고객 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
@@ -2351,6 +2394,16 @@
         note: noteCell ? noteCell.textContent.trim() : '',
         updated_at: new Date().toISOString(),
       };
+      const customerLabels = {ceo_name:'대표자', ceo_phone:'대표전화', contact_name:'담당자', contact_phone:'담당자전화', address:'주소', freelancer_name:'영업프리랜서', sales_rep:'영업담당', note:'비고'};
+      const prevCustomer = RECORD_SNAPSHOTS.customer && RECORD_SNAPSHOTS.customer[record.company_name];
+      if(prevCustomer){
+        const changes = diffFields(prevCustomer, record, customerLabels);
+        if(changes.length) logAudit('customers', record.company_name, 'update', changes);
+      } else {
+        logAudit('customers', record.company_name, 'insert', diffFields({}, record, customerLabels));
+      }
+      if(!RECORD_SNAPSHOTS.customer) RECORD_SNAPSHOTS.customer = {};
+      RECORD_SNAPSHOTS.customer[record.company_name] = { ...record };
       const existingId = tr.dataset.id;
       try {
         if(existingId){
@@ -2412,6 +2465,7 @@
       const table = document.getElementById('grid-freelancers');
       replaceGridRows(table, (data||[]).map(f => renderFreelancerRowHtml(f, attachCounts, showTrash)).join(''));
       snapshotGrid('freelancers');
+      snapshotRecords('freelancer', 'name', data);
       return true;
     } catch(e){
       console.warn('영업프리랜서 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
@@ -2439,6 +2493,16 @@
         note: noteCell ? noteCell.textContent.trim() : '',
         updated_at: new Date().toISOString(),
       };
+      const freelancerLabels = {phone:'전화', area:'지역', level:'등급', status:'상태', email:'이메일', note:'비고'};
+      const prevFreelancer = RECORD_SNAPSHOTS.freelancer && RECORD_SNAPSHOTS.freelancer[record.name];
+      if(prevFreelancer){
+        const changes = diffFields(prevFreelancer, record, freelancerLabels);
+        if(changes.length) logAudit('freelancers', record.name, 'update', changes);
+      } else {
+        logAudit('freelancers', record.name, 'insert', diffFields({}, record, freelancerLabels));
+      }
+      if(!RECORD_SNAPSHOTS.freelancer) RECORD_SNAPSHOTS.freelancer = {};
+      RECORD_SNAPSHOTS.freelancer[record.name] = { ...record };
       const existingId = tr.dataset.id;
       try {
         if(existingId){
@@ -2546,6 +2610,7 @@
         if(PRE_PROJECTS.length) selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name);
       }
       snapshotGrid('pre-list');
+      snapshotRecords('pre_project', 'pre_project_no', infoData);
       return true;
     } catch(e){
       console.warn('사전프로젝트 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
@@ -2574,6 +2639,16 @@
         note: noteCell ? noteCell.textContent.trim() : '',
         updated_at: new Date().toISOString(),
       };
+      const preProjectLabels = {company_name:'고객사명', inspector:'실사담당', credit_grade:'신용도', line_availability_mw:'선로유무', business_type:'사업유형', initial_capacity_kw:'최초설치용량', contract_capacity_kw:'계약설치용량', note:'비고'};
+      const prevPreProject = RECORD_SNAPSHOTS.pre_project && RECORD_SNAPSHOTS.pre_project[record.pre_project_no];
+      if(prevPreProject){
+        const changes = diffFields(prevPreProject, record, preProjectLabels);
+        if(changes.length) logAudit('pre_project_info', record.pre_project_no, 'update', changes);
+      } else {
+        logAudit('pre_project_info', record.pre_project_no, 'insert', diffFields({}, record, preProjectLabels));
+      }
+      if(!RECORD_SNAPSHOTS.pre_project) RECORD_SNAPSHOTS.pre_project = {};
+      RECORD_SNAPSHOTS.pre_project[record.pre_project_no] = { ...record };
       try {
         await sb.from('pre_project_info').upsert(record, { onConflict: 'pre_project_no' });
       } catch(e){
@@ -2693,6 +2768,7 @@
         if(PROG_PROJECTS.length) selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name);
       }
       snapshotGrid('progress');
+      snapshotRecords('prog_project', 'prog_project_no', infoData);
       return true;
     } catch(e){
       console.warn('진행프로젝트 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
@@ -2722,6 +2798,16 @@
         start_expected_date: tr.children[13].textContent.trim() || null,
         updated_at: new Date().toISOString(),
       };
+      const progProjectLabels = {company_name:'고객사명', design_manager:'설계담당', construction_manager:'시공담당', admin_manager:'행정담당', start_expected_date:'착수예정일', contract_capacity_kw:'계약설치용량', final_capacity_kw:'최종설치용량'};
+      const prevProgProject = RECORD_SNAPSHOTS.prog_project && RECORD_SNAPSHOTS.prog_project[record.prog_project_no];
+      if(prevProgProject){
+        const changes = diffFields(prevProgProject, record, progProjectLabels);
+        if(changes.length) logAudit('prog_project_info', record.prog_project_no, 'update', changes);
+      } else {
+        logAudit('prog_project_info', record.prog_project_no, 'insert', diffFields({}, record, progProjectLabels));
+      }
+      if(!RECORD_SNAPSHOTS.prog_project) RECORD_SNAPSHOTS.prog_project = {};
+      RECORD_SNAPSHOTS.prog_project[record.prog_project_no] = { ...record };
       try {
         await sb.from('prog_project_info').upsert(record, { onConflict: 'prog_project_no' });
       } catch(e){
@@ -2777,6 +2863,7 @@
         applyHoldRowLockState(tr);
       });
       snapshotGrid('holds');
+      snapshotRecords('hold', 'id', data);
       return true;
     } catch(e){
       console.warn('취소보류 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
@@ -2804,13 +2891,28 @@
         confirmed_at: tr.dataset.confirmedAt || null,
         updated_at: new Date().toISOString(),
       };
+      const holdLabels = {company_name:'고객사명', freelancer_name:'영업프리랜서', sales_rep:'영업담당', occurred_date:'발생일자', reason:'보류취소사유', confirm_status:'검토확정'};
       const existingId = tr.dataset.id;
+      const prevHold = existingId && RECORD_SNAPSHOTS.hold && RECORD_SNAPSHOTS.hold[existingId];
+      if(prevHold){
+        const changes = diffFields(prevHold, record, holdLabels);
+        if(changes.length) logAudit('hold_cancel_requests', record.company_name || existingId, 'update', changes);
+      } else if(existingId){
+        logAudit('hold_cancel_requests', record.company_name || existingId, 'insert', diffFields({}, record, holdLabels));
+      }
       try {
         if(existingId){
           await sb.from('hold_cancel_requests').update(record).eq('id', existingId);
+          if(!RECORD_SNAPSHOTS.hold) RECORD_SNAPSHOTS.hold = {};
+          RECORD_SNAPSHOTS.hold[existingId] = { ...record };
         } else {
           const { data } = await sb.from('hold_cancel_requests').insert(record).select('id').single();
-          if(data) tr.dataset.id = data.id;
+          if(data){
+            tr.dataset.id = data.id;
+            logAudit('hold_cancel_requests', record.company_name || data.id, 'insert', diffFields({}, record, holdLabels));
+            if(!RECORD_SNAPSHOTS.hold) RECORD_SNAPSHOTS.hold = {};
+            RECORD_SNAPSHOTS.hold[data.id] = { ...record };
+          }
         }
       } catch(e){
         console.warn('취소보류 저장 실패(DB) — 화면에는 반영되어 있습니다.', e);
@@ -2994,11 +3096,74 @@
         }
         if(typeof applyFormsviewFilters === 'function') applyFormsviewFilters();
       }
+      snapshotRecords('form', 'form_code', data);
       return true;
     } catch(e){
       console.warn('양식 목록 DB 로드 실패, 데모 데이터로 표시합니다.', e);
       return false;
     }
+  }
+
+  // ---- 변경이력(감사로그): Supabase 실데이터 로드/표시 (시스템관리자 전용) ----
+  const AUDITLOG_TABLE_LABELS = { customers:'고객', freelancers:'프리랜서', pre_project_info:'사전프로젝트', prog_project_info:'진행프로젝트', pre_project_steps:'사전프로젝트 공정', prog_project_steps:'진행프로젝트 공정', hold_cancel_requests:'취소보류', forms:'양식', users:'사용자' };
+  const AUDITLOG_ACTION_LABELS = { insert:'등록', update:'수정', delete:'삭제(휴지통)', restore:'복구', permanent_delete:'완전삭제', reschedule:'일정재수립' };
+  let AUDITLOG_ROWS = [];
+  async function loadAuditLogFromSupabase(){
+    const content = document.getElementById('auditlog-content');
+    if(!isSystemAdmin()){
+      if(content) content.innerHTML = '<div style="padding:24px;color:var(--slate);font-size:13px;">권한이 없습니다. (시스템관리자만 조회할 수 있습니다)</div>';
+      return false;
+    }
+    if(content && !content.querySelector('.grid-wrap')){
+      content.innerHTML = `<div class="grid-wrap"><table class="editgrid" id="grid-auditlog"><tr><th>일시</th><th>테이블</th><th>대상</th><th>작업</th><th>담당자</th><th>상세</th></tr></table></div>`;
+    }
+    if(!sb) return false;
+    try {
+      const { data, error } = await sb.from('audit_log').select('*').order('changed_at', {ascending:false}).limit(200);
+      if(error) throw error;
+      AUDITLOG_ROWS = data || [];
+      const filterSel = document.getElementById('auditlog-table-filter');
+      if(filterSel && !filterSel.dataset.filled){
+        Object.keys(AUDITLOG_TABLE_LABELS).forEach(k=>{
+          const o = document.createElement('option');
+          o.value = k; o.textContent = AUDITLOG_TABLE_LABELS[k];
+          filterSel.appendChild(o);
+        });
+        filterSel.dataset.filled = '1';
+      }
+      renderAuditLogTable();
+      return true;
+    } catch(e){
+      console.warn('변경이력 로드 실패', e);
+      return false;
+    }
+  }
+  function renderAuditLogTable(){
+    const table = document.getElementById('grid-auditlog');
+    if(!table) return;
+    const filterVal = (document.getElementById('auditlog-table-filter')||{}).value || '';
+    const rows = AUDITLOG_ROWS.filter(r => !filterVal || r.table_name === filterVal);
+    const html = rows.map((r,i)=>{
+      const when = r.changed_at ? new Date(r.changed_at).toLocaleString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+      const tableLabel = AUDITLOG_TABLE_LABELS[r.table_name] || r.table_name;
+      const actionLabel = AUDITLOG_ACTION_LABELS[r.action] || r.action;
+      const hasDetail = Array.isArray(r.changes) && r.changes.length;
+      const detailBtn = hasDetail ? `<button class="btn-mini" style="background:var(--navy-3);font-size:10px;padding:4px 8px;" onclick="toggleAuditDetail(${i})">상세</button>` : `<span style="color:var(--slate);">-</span>`;
+      const detailRow = hasDetail ? `<tr id="audit-detail-${i}" style="display:none;"><td colspan="6" style="background:var(--paper);font-size:11.5px;line-height:1.7;">${r.changes.map(c=>`· ${c.field}: ${c.from||'(빈값)'} → ${c.to||'(빈값)'}`).join('<br>')}</td></tr>` : '';
+      return `<tr>
+        <td class="readonly-cell">${when}</td>
+        <td class="readonly-cell">${tableLabel}</td>
+        <td class="readonly-cell">${r.row_key||'-'}</td>
+        <td class="readonly-cell">${actionLabel}</td>
+        <td class="readonly-cell">${r.changed_by||'-'}</td>
+        <td>${detailBtn}</td>
+      </tr>${detailRow}`;
+    }).join('');
+    replaceGridRows(table, html);
+  }
+  function toggleAuditDetail(i){
+    const row = document.getElementById('audit-detail-' + i);
+    if(row) row.style.display = row.style.display === 'none' ? '' : 'none';
   }
 
   // ---- 자료조회: Supabase 실데이터 로드 (읽기전용 참고자료 목록) ----
@@ -3417,6 +3582,7 @@
         alert('양식 등록 중 오류가 발생했습니다. (Supabase 저장 실패)');
         return;
       }
+      logAudit('forms', symbol, 'insert', [{field:'양식명', from:'', to:name}, {field:'버전', from:'', to:version}]);
       closeModal();
       await loadFormsFromSupabase();
       return;
@@ -3749,6 +3915,37 @@
     return JSON.stringify(v).replace(/"/g, '&quot;');
   }
 
+  // ==================== 변경이력(감사로그) 공통 유틸 ====================
+  // ISO 인증 및 상장 대비: 모든 관리 화면의 등록/수정/삭제/복구를 누가·언제·무엇을 바꿨는지
+  // 필드 단위로 audit_log 테이블에 기록합니다. (변경이력 화면: go('auditlog'))
+  async function logAudit(table, rowKey, action, changes){
+    if(!sb) return;
+    try {
+      await sb.from('audit_log').insert({
+        table_name: table,
+        row_key: String(rowKey ?? ''),
+        action,
+        changes: (changes && changes.length) ? changes : null,
+        changed_by: CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.name : (typeof CURRENT_USER_NAME !== 'undefined' ? CURRENT_USER_NAME : null),
+      });
+    } catch(e){ console.warn('감사로그 기록 실패', e); }
+  }
+  function diffFields(oldRec, newRec, fieldLabels){
+    const changes = [];
+    Object.keys(fieldLabels).forEach(f=>{
+      const a = (oldRec && oldRec[f] != null) ? String(oldRec[f]) : '';
+      const b = (newRec && newRec[f] != null) ? String(newRec[f]) : '';
+      if(a !== b) changes.push({ field: fieldLabels[f], from: a, to: b });
+    });
+    return changes;
+  }
+  const RECORD_SNAPSHOTS = {}; // context -> { naturalKey -> {field: value, ...} }
+  function snapshotRecords(context, keyField, rows){
+    const map = {};
+    (rows||[]).forEach(r => { if(r && r[keyField] != null) map[r[keyField]] = { ...r }; });
+    RECORD_SNAPSHOTS[context] = map;
+  }
+
   // ==================== 고객/프리랜서/취소보류 삭제(휴지통) 공통 유틸 ====================
   // 정책: 삭제는 시스템관리자만. 기본은 "논리삭제"(휴지통으로 이동, 목록에서 자동 숨김,
   // 필요시 복구 가능). "완전삭제"는 시스템관리자만 + 연관된 프로젝트/이력/첨부파일이
@@ -3833,6 +4030,7 @@
     if(!confirm(`정말 삭제하시겠습니까?${detail}\n휴지통으로 이동되며, 필요 시 복구할 수 있습니다.`)) return;
     try {
       await sb.from(table).update({ is_deleted:true, deleted_at:new Date().toISOString() }).eq(idCol, id);
+      await logAudit(table, key || id, 'delete');
     } catch(e){
       console.warn('삭제 실패', e);
       alert('삭제 중 오류가 발생했습니다.');
@@ -3844,6 +4042,7 @@
     idCol = idCol || 'id';
     try {
       await sb.from(table).update({ is_deleted:false, deleted_at:null }).eq(idCol, id);
+      await logAudit(table, id, 'restore');
     } catch(e){
       console.warn('복구 실패', e);
       alert('복구 중 오류가 발생했습니다.');
@@ -3862,6 +4061,7 @@
     if(!confirm('완전히 삭제하면 복구할 수 없습니다. 계속하시겠습니까?')) return;
     try {
       await sb.from(table).delete().eq(idCol, id);
+      await logAudit(table, key || id, 'permanent_delete');
     } catch(e){
       console.warn('완전삭제 실패', e);
       alert('완전삭제 중 오류가 발생했습니다.');
@@ -4455,6 +4655,12 @@
     document.getElementById('modal-content').innerHTML = `
       <div class="modal-title">공정 상세 관리 — ${id} — ${proj.name}</div>
       <div class="modal-sub">실적시작일·실적종료일을 입력하면 진행단계가 자동으로 갱신됩니다. "${finalLabel}" 단계의 실적종료일 입력 시 결재암호·서명이 필요합니다. 저장하면 공정현황·리스트에도 함께 반영됩니다.</div>
+      <div style="display:flex;align-items:center;gap:8px;margin:8px 0;">
+        <label style="font-size:12px;color:var(--slate);">기준일자</label>
+        <input type="date" id="pd-reschedule-base" style="border:1px solid var(--grid-line);border-radius:6px;padding:4px 8px;font-size:12px;">
+        <button class="btn-mini" style="background:var(--navy-3);" onclick="rescheduleProcessDates('${kind}')">일정 재수립</button>
+        <span style="font-size:11px;color:var(--slate);">※ 프로젝트 전체 단계의 계획일정을 기준일자로 다시 계산합니다(실적은 그대로 유지됩니다). 재수립 후 아래 "저장"을 눌러야 실제 반영됩니다.</span>
+      </div>
       <div style="max-height:52vh;overflow:auto;border:1px solid var(--grid-line);border-radius:8px;">
         <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
           <tr style="position:sticky;top:0;background:var(--paper);">
@@ -4474,6 +4680,32 @@
       </div>`;
     document.getElementById('modal-box').style.width = '920px';
     document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  // 공정 계획일정 재수립: 프로젝트 전체 단계의 계획시작/계획종료를 기준일자 기준으로 다시 계산합니다.
+  // 실적(실적시작일/실적종료일)은 절대 건드리지 않습니다.
+  function rescheduleProcessDates(kind){
+    const id = kind==='pre' ? window._currentPreId : window._currentProgId;
+    if(!id) return;
+    const baseVal = document.getElementById('pd-reschedule-base').value;
+    if(!baseVal){ alert('기준일자를 입력해 주세요.'); return; }
+    if(!confirm('프로젝트 전체 단계의 계획일정을 기준일자로 다시 계산합니다. 실적(실적시작일/실적종료일)은 그대로 유지됩니다. 계속하시겠습니까?')) return;
+    const offsets = kind==='pre' ? PRE_OFFSETS : PROG_OFFSETS;
+    const data = getStepData(kind, id).map(r => ({...r})); // shallow-clone: 아직 저장 전이므로 실제 배열은 건드리지 않습니다.
+    const base = new Date(baseVal + 'T00:00:00');
+    let touched = 0;
+    data.forEach((r, i) => {
+      const off = offsets[i];
+      if(!off) return;
+      const s = new Date(base); s.setDate(base.getDate() + (off[0]-1));
+      const e = new Date(base); e.setDate(base.getDate() + (off[1]-1));
+      r.planStart = fmtDate(s);
+      r.planEnd = fmtDate(e);
+      touched++;
+    });
+    logAudit(kind==='pre' ? 'pre_project_steps' : 'prog_project_steps', id, 'reschedule', [{field:'기준일자', from:'', to: baseVal}, {field:'재계산된 단계 수', from:'', to: String(touched)}]);
+    openProcessDetailModal(kind, data); // 모달을 새 계획일정으로 다시 그림(아직 저장 전 — 사용자가 "저장"을 눌러야 DB 반영)
+    alert(`${touched}개 단계의 계획일정을 다시 계산했습니다. 내용을 확인하신 뒤 "저장"을 눌러주세요.`);
   }
 
   function saveProcessDetailModal(kind){
@@ -4506,6 +4738,19 @@
     });
     PROJECT_STEP_DATA[kind + '_' + id] = data;
     saveStepsToSupabase(kind, id); // 실제 DB에 반영 (백그라운드)
+    // 공정 단계별 변경사항을 프로젝트 단위로 한 건의 감사로그로 기록합니다 (백그라운드, UI 블로킹 없음).
+    (function(){
+      const stepLabels = {manager:'담당자', stage:'진행단계', planStart:'계획시작일', planEnd:'계획종료일', actualStart:'실적시작일', actualEnd:'실적종료일', note:'특이사항'};
+      const stepChanges = [];
+      data.forEach((row, i) => {
+        const prev = prevData[i] || {};
+        Object.keys(stepLabels).forEach(f=>{
+          const a = prev[f] || '', b = row[f] || '';
+          if(a !== b) stepChanges.push({ field: `${row.order}단계(${row.name}) ${stepLabels[f]}`, from: a, to: b });
+        });
+      });
+      if(stepChanges.length) logAudit(kind==='pre' ? 'pre_project_steps' : 'prog_project_steps', id, 'update', stepChanges);
+    })();
 
     let newCurrent = data.findIndex(r=>r.stage !== '완료');
     if(newCurrent === -1) newCurrent = data.length - 1;
