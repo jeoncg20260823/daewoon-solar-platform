@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>대운이엔씨 태양광 프로젝트 관리 플랫폼 — 프로토타입</title>
+<!-- v106: 모바일 홈 화면에 아이콘으로 추가할 수 있도록 PWA용 메타/아이콘/매니페스트를 연결합니다.
+     (배포 시 manifest.json, icon-192.png, icon-512.png, icon-512-maskable.png, apple-touch-icon.png 를
+      index.html과 같은 폴더에 함께 업로드해야 아이콘이 정상적으로 표시됩니다.) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#128A57">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="태양광플랫폼">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -718,64 +728,8 @@
             <div class="phone-top-name" id="mobile-field-topname">김영훈 담당자님</div>
           </div>
           <div class="phone-body" id="mobile-tab-projects">
-            <div class="field-section-label">사전 프로젝트 · 2건</div>
-            <div class="job-card" onclick="mobileOpenProcess('pre','PET-2026-0201','원일공업')" style="cursor:pointer;">
-              <div class="job-card-top">
-                <div>
-                  <div class="job-card-customer">원일공업</div>
-                  <div class="job-card-id mono">PET-2026-0201</div>
-                </div>
-                <span class="badge wait">진행중</span>
-              </div>
-              <div class="job-card-step">현재 공정 · 실사 요청</div>
-              <div class="job-card-foot">
-                <span style="font-size:11px;color:var(--slate)">담당 전창길</span>
-                <button class="btn-mini" onclick="event.stopPropagation();mobileOpenProcess('pre','PET-2026-0201','원일공업')">공정관리 →</button>
-              </div>
-            </div>
-            <div class="job-card" onclick="mobileOpenProcess('pre','PET-2026-0204','울산워터젯(개인)')" style="cursor:pointer;">
-              <div class="job-card-top">
-                <div>
-                  <div class="job-card-customer">울산워터젯(개인)</div>
-                  <div class="job-card-id mono">PET-2026-0204</div>
-                </div>
-                <span class="badge wait">진행중</span>
-              </div>
-              <div class="job-card-step">현재 공정 · 고객 사전미팅</div>
-              <div class="job-card-foot">
-                <span style="font-size:11px;color:var(--slate)">담당 김대호</span>
-                <button class="btn-mini" onclick="event.stopPropagation();mobileOpenProcess('pre','PET-2026-0204','울산워터젯(개인)')">공정관리 →</button>
-              </div>
-            </div>
-
-            <div class="field-section-label" style="margin-top:6px;">진행 프로젝트 · 2건</div>
-            <div class="job-card" onclick="mobileOpenProcess('prog','PCT-2026-0189','금성지티씨(주)')" style="cursor:pointer;">
-              <div class="job-card-top">
-                <div>
-                  <div class="job-card-customer">금성지티씨(주)</div>
-                  <div class="job-card-id mono">PCT-2026-0189</div>
-                </div>
-                <span class="badge wait">진행중</span>
-              </div>
-              <div class="job-card-step">현재 공정 · 구조물 설치</div>
-              <div class="job-card-foot">
-                <span style="font-size:11px;color:var(--slate)">계획종료 08/22</span>
-                <button class="btn-mini" onclick="event.stopPropagation();mobileOpenProcess('prog','PCT-2026-0189','금성지티씨(주)')">공정관리 →</button>
-              </div>
-            </div>
-            <div class="job-card" onclick="mobileOpenProcess('prog','PCT-2026-0174','동희산업')" style="cursor:pointer;">
-              <div class="job-card-top">
-                <div>
-                  <div class="job-card-customer">동희산업</div>
-                  <div class="job-card-id mono">PCT-2026-0174</div>
-                </div>
-                <span class="badge wait">진행중</span>
-              </div>
-              <div class="job-card-step">현재 공정 · 전기사용 신청</div>
-              <div class="job-card-foot">
-                <span style="font-size:11px;color:var(--slate)">계획종료 08/25</span>
-                <button class="btn-mini" onclick="event.stopPropagation();mobileOpenProcess('prog','PCT-2026-0174','동희산업')">공정관리 →</button>
-              </div>
+            <div id="mobile-project-list-content">
+              <div style="padding:20px 4px;color:var(--slate);font-size:12px;text-align:center;">불러오는 중...</div>
             </div>
           </div>
 
@@ -1798,6 +1752,9 @@
     <div class="main">
   <div class="grid-toolbar">
     <div class="grid-toolbar-title">변경이력</div>
+    <div class="toolbar-actions">
+      <button class="btn-cancel" onclick="closeAuditLog()">닫기</button>
+    </div>
   </div>
   <div class="filter-tabs" id="auditlog-filters" style="flex-wrap:wrap;gap:10px;align-items:center;">
     <span style="font-size:11.5px;color:var(--slate);">테이블</span>
@@ -1810,6 +1767,10 @@
     <input type="date" id="auditlog-end-date" class="cell-select" style="border:1px solid var(--grid-line);border-radius:999px;padding:6px 12px;width:auto;font-size:11.5px;">
     <button class="btn-mini" style="background:var(--navy-3);font-size:11px;padding:6px 12px;" onclick="loadAuditLogFromSupabase()">조회</button>
     <button class="btn-mini" style="background:var(--slate);font-size:11px;padding:6px 12px;" onclick="resetAuditLogDateRange()">전체기간</button>
+    <span id="auditlog-target-chip" style="display:none;font-size:11px;background:var(--paper);border:1px solid var(--grid-line);border-radius:999px;padding:5px 10px;">
+      대상: <b id="auditlog-target-label"></b>
+      <a href="javascript:void(0)" onclick="clearAuditLogTargetFilter()" style="margin-left:6px;color:var(--slate);">✕</a>
+    </span>
     <span style="font-size:11px;color:var(--slate);margin-left:auto;" id="auditlog-scope-note">전체기간 · 최근 1000건 · 시스템관리자 전용</span>
   </div>
   <div class="grid-content" id="auditlog-content">
@@ -1844,7 +1805,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v105'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v106'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1946,11 +1907,14 @@
       cancelGrid(key); // 저장하지 않은 변경사항은 화면을 벗어나면 자동으로 원상복구됩니다.
     }
   }
+  let AUDITLOG_RETURN_TARGET = 'dashboard';
   function go(target){
     const prevActive = document.querySelector('.screen.active');
     if(prevActive){
       const prevKey = Object.keys(map).find(k => map[k] === prevActive.id);
       if(prevKey && prevKey !== target) discardUnsavedChanges(prevKey);
+      // 변경이력 화면으로 들어가기 직전 화면을 기억해 둡니다("닫기"를 누르면 그 화면으로 돌아갑니다).
+      if(target === 'auditlog' && prevKey && prevKey !== 'auditlog') AUDITLOG_RETURN_TARGET = prevKey;
     }
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById(map[target]).classList.add('active');
@@ -1969,7 +1933,11 @@
     if(target === 'users') loadUsersFromSupabase();
     if(target === 'customers') loadCustomersFromSupabase();
     if(target === 'freelancers') loadFreelancersFromSupabase();
-    if(target === 'mobile') syncFieldMobileUser();
+    if(target === 'mobile'){
+      syncFieldMobileUser();
+      Promise.all([loadPreProjectsFromSupabase(), loadProgProjectsFromSupabase()]).then(()=>renderMobileProjectList());
+      renderMobileProjectList(); // 이미 로드되어 있던 데이터로 우선 한번 표시
+    }
     if(target === 'dashboard' && PRE_PROJECTS.length){ syncAllPreRows(); selectPreProject(PRE_PROJECTS[0].id, PRE_PROJECTS[0].name); updatePreTotalCount(); }
     if(target === 'dashboard') loadPreProjectsFromSupabase();
     if(target === 'progress' && PROG_PROJECTS.length){ syncAllProgRows(); selectProgressProject(PROG_PROJECTS[0].id, PROG_PROJECTS[0].name); updateProgTotalCount(); }
@@ -3177,6 +3145,7 @@
     if(e) e.value = '';
     loadAuditLogFromSupabase();
   }
+  let AUDITLOG_ROW_KEY_FILTER = null; // 특정 프로젝트(대상) 하나로만 좁혀서 볼 때 사용
   // 각 관리화면의 "변경이력" 버튼에서 호출: 변경이력 화면으로 이동하면서 해당 테이블로 필터를 걸어줍니다.
   function openAuditLogFor(tableKey){
     go('auditlog');
@@ -3188,14 +3157,57 @@
       const e = document.getElementById('auditlog-end-date');
       if(s) s.value = '';
       if(e) e.value = '';
+      AUDITLOG_ROW_KEY_FILTER = null;
+      updateAuditLogTargetChip();
       loadAuditLogFromSupabase().then(()=>renderAuditLogTable());
     }, 0);
+  }
+  // 사전/진행 프로젝트의 "공정상세관리" 모달에서 호출: 해당 프로젝트 하나에 대한 변경이력만 봅니다.
+  // tableKeys는 그 프로젝트와 관련된 테이블들(기본정보 + 공정) 전체를 함께 보여주기 위해 배열로 받습니다.
+  function openAuditLogForProject(tableKeys, rowKey, label){
+    go('auditlog');
+    setTimeout(()=>{
+      const sel = document.getElementById('auditlog-table-filter');
+      if(sel) sel.value = ''; // 프로젝트 필터가 우선이므로 테이블 필터는 전체로 둡니다.
+      const s = document.getElementById('auditlog-start-date');
+      const e = document.getElementById('auditlog-end-date');
+      if(s) s.value = '';
+      if(e) e.value = '';
+      AUDITLOG_ROW_KEY_FILTER = { tableKeys: Array.isArray(tableKeys) ? tableKeys : [tableKeys], rowKey, label: label || rowKey };
+      updateAuditLogTargetChip();
+      loadAuditLogFromSupabase().then(()=>renderAuditLogTable());
+    }, 0);
+  }
+  function clearAuditLogTargetFilter(){
+    AUDITLOG_ROW_KEY_FILTER = null;
+    updateAuditLogTargetChip();
+    renderAuditLogTable();
+  }
+  function updateAuditLogTargetChip(){
+    const chip = document.getElementById('auditlog-target-chip');
+    const label = document.getElementById('auditlog-target-label');
+    if(!chip || !label) return;
+    if(AUDITLOG_ROW_KEY_FILTER){
+      chip.style.display = '';
+      label.textContent = AUDITLOG_ROW_KEY_FILTER.label;
+    } else {
+      chip.style.display = 'none';
+    }
+  }
+  // 변경이력 화면의 "닫기": 이 화면에 들어오기 전 화면으로 돌아갑니다.
+  function closeAuditLog(){
+    AUDITLOG_ROW_KEY_FILTER = null;
+    go(AUDITLOG_RETURN_TARGET || 'dashboard');
   }
   function renderAuditLogTable(){
     const table = document.getElementById('grid-auditlog');
     if(!table) return;
     const filterVal = (document.getElementById('auditlog-table-filter')||{}).value || '';
-    const rows = AUDITLOG_ROWS.filter(r => !filterVal || r.table_name === filterVal);
+    let rows = AUDITLOG_ROWS.filter(r => !filterVal || r.table_name === filterVal);
+    if(AUDITLOG_ROW_KEY_FILTER){
+      const { tableKeys, rowKey } = AUDITLOG_ROW_KEY_FILTER;
+      rows = rows.filter(r => tableKeys.includes(r.table_name) && String(r.row_key) === String(rowKey));
+    }
     const html = rows.map((r,i)=>{
       const when = r.changed_at ? new Date(r.changed_at).toLocaleString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
       const tableLabel = AUDITLOG_TABLE_LABELS[r.table_name] || r.table_name;
@@ -4708,10 +4720,11 @@
     document.getElementById('modal-content').innerHTML = `
       <div class="modal-title">공정 상세 관리 — ${id} — ${proj.name}</div>
       <div class="modal-sub">실적시작일·실적종료일을 입력하면 진행단계가 자동으로 갱신됩니다. "${finalLabel}" 단계의 실적종료일 입력 시 결재암호·서명이 필요합니다. 저장하면 공정현황·리스트에도 함께 반영됩니다.</div>
-      <div style="display:flex;align-items:center;gap:8px;margin:8px 0;">
+      <div style="display:flex;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap;">
         <label style="font-size:12px;color:var(--slate);">기준일자</label>
         <input type="date" id="pd-reschedule-base" style="border:1px solid var(--grid-line);border-radius:6px;padding:4px 8px;font-size:12px;">
         <button class="btn-mini" style="background:var(--navy-3);" onclick="rescheduleProcessDates('${kind}')">일정 재수립</button>
+        <button class="btn-mini" style="background:var(--slate);" onclick="openAuditLogForProject(['${kind==='pre'?'pre_project_steps':'prog_project_steps'}','${kind==='pre'?'pre_project_info':'prog_project_info'}'], '${id}', '${id} · ${proj.name}')">📋 이 프로젝트 변경이력</button>
         <span style="font-size:11px;color:var(--slate);">※ 프로젝트 전체 단계의 계획일정을 기준일자로 다시 계산합니다(실적은 그대로 유지됩니다). 재수립 후 아래 "저장"을 눌러야 실제 반영됩니다.</span>
       </div>
       <div style="max-height:52vh;overflow:auto;border:1px solid var(--grid-line);border-radius:8px;">
@@ -5583,8 +5596,69 @@
     if(profName) profName.textContent = name;
     if(profRole) profRole.textContent = roleTxt;
   }
+  // v106: 모바일 "내 프로젝트" 목록을 더 이상 고정된 예시 카드로 보여주지 않고,
+  // 사전/진행 프로젝트관리 화면과 동일한 실제 데이터(PRE_PROJECTS/PROG_PROJECTS)로 렌더링합니다.
+  function renderMobileProjectList(){
+    const el = document.getElementById('mobile-project-list-content');
+    if(!el) return;
+    if(!PRE_PROJECTS.length && !PROG_PROJECTS.length){
+      el.innerHTML = '<div style="padding:20px 4px;color:var(--slate);font-size:12px;text-align:center;">불러오는 중...</div>';
+      return;
+    }
+    const preCardHtml = (p) => {
+      const data = getStepData('pre', p.id);
+      const curIdx = computeCurrentIndex(data);
+      const status = computeProjectStatus('pre', p.id, data);
+      const badgeClass = status==='완료' ? 'ok' : (status==='취소보류' ? 'hold' : 'wait');
+      const safeName = (p.name||'').replace(/'/g,"\\'");
+      return `<div class="job-card" onclick="mobileOpenProcess('pre','${p.id}','${safeName}')" style="cursor:pointer;">
+        <div class="job-card-top">
+          <div>
+            <div class="job-card-customer">${p.name||''}</div>
+            <div class="job-card-id mono">${p.id}</div>
+          </div>
+          <span class="badge ${badgeClass}">${status}</span>
+        </div>
+        <div class="job-card-step">현재 공정 · ${PRE_STEPS[curIdx]||''}</div>
+        <div class="job-card-foot">
+          <span style="font-size:11px;color:var(--slate)">담당 ${p.manager||'-'}</span>
+          <button class="btn-mini" onclick="event.stopPropagation();mobileOpenProcess('pre','${p.id}','${safeName}')">공정관리 →</button>
+        </div>
+      </div>`;
+    };
+    const progCardHtml = (p) => {
+      const data = getStepData('prog', p.id);
+      const curIdx = computeCurrentIndex(data);
+      const status = computeProjectStatus('prog', p.id, data);
+      const badgeClass = status==='완료' ? 'ok' : (status==='취소보류' ? 'hold' : 'wait');
+      const safeName = (p.name||'').replace(/'/g,"\\'");
+      const planEnd = data[curIdx] ? data[curIdx].planEnd : '';
+      return `<div class="job-card" onclick="mobileOpenProcess('prog','${p.id}','${safeName}')" style="cursor:pointer;">
+        <div class="job-card-top">
+          <div>
+            <div class="job-card-customer">${p.name||''}</div>
+            <div class="job-card-id mono">${p.id}</div>
+          </div>
+          <span class="badge ${badgeClass}">${status}</span>
+        </div>
+        <div class="job-card-step">현재 공정 · ${PROG_STEPS[curIdx]||''}</div>
+        <div class="job-card-foot">
+          <span style="font-size:11px;color:var(--slate)">${planEnd ? '계획종료 '+planEnd : ''}</span>
+          <button class="btn-mini" onclick="event.stopPropagation();mobileOpenProcess('prog','${p.id}','${safeName}')">공정관리 →</button>
+        </div>
+      </div>`;
+    };
+    const preActive = PRE_PROJECTS.filter(p => computeProjectStatus('pre', p.id, getStepData('pre', p.id)) === '진행중');
+    const progActive = PROG_PROJECTS.filter(p => computeProjectStatus('prog', p.id, getStepData('prog', p.id)) === '진행중');
+    el.innerHTML = `
+      <div class="field-section-label">사전 프로젝트 · ${preActive.length}건</div>
+      ${preActive.length ? preActive.map(preCardHtml).join('') : '<div style="padding:10px 4px;color:var(--slate);font-size:11.5px;">진행 중인 사전 프로젝트가 없습니다.</div>'}
+      <div class="field-section-label" style="margin-top:6px;">진행 프로젝트 · ${progActive.length}건</div>
+      ${progActive.length ? progActive.map(progCardHtml).join('') : '<div style="padding:10px 4px;color:var(--slate);font-size:11.5px;">진행 중인 프로젝트가 없습니다.</div>'}
+    `;
+  }
   function mobileGo(state){
-    if(state === 'list') syncFieldMobileUser();
+    if(state === 'list'){ syncFieldMobileUser(); renderMobileProjectList(); }
     document.querySelectorAll('.mobile-substate').forEach(s=>s.style.display='none');
     const el = document.getElementById('mobile-'+state);
     if(el) el.style.display = 'flex';
