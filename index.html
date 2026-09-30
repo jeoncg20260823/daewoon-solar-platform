@@ -56,6 +56,13 @@
      상단 화면전환 내비게이션은 시스템관리자 로그인일 때만 보이도록 숨겨두고,
      일반 화면 우하단에는 항상 작은 버전 표시만 남겨둡니다. */
   #version-badge{ position:fixed; bottom:6px; right:8px; font-size:10px; color:rgba(0,0,0,0.35); z-index:5; pointer-events:none; background:rgba(255,255,255,0.6); padding:1px 6px; border-radius:999px; }
+  /* v108: 대표 로그인(조회 전용)에서는 등록/저장 버튼을 아예 숨겨서 "볼 수만 있는 화면"임을
+     명확히 드러냅니다. 실제 편집 잠금(contenteditable/select disabled)은 JS(applyWritePermissions)가 담당합니다. */
+  body.read-only-mode .btn-add,
+  body.read-only-mode button[id^="save-"]{ display:none; }
+  body.read-only-mode .btn-save{ display:none; }
+  #read-only-banner{ display:none; background:#FFF3DE; color:var(--amber-dark); font-size:12px; font-weight:700; text-align:center; padding:7px 10px; }
+  body.read-only-mode #read-only-banner{ display:block; }
   .demo-nav{
     display:none;
     gap:6px;
@@ -406,7 +413,8 @@
 </head>
 <body>
 
-<div id="version-badge">v108</div>
+<div id="version-badge">v109</div>
+<div id="read-only-banner">🔒 조회 전용 모드입니다 — 등록·수정·삭제는 시스템관리자만 가능합니다.</div>
 
 <!-- v107: 시스템관리자 로그인일 때만 보이는 화면전환용 바로가기 바입니다(일반 직원 화면에는 표시되지 않습니다). -->
 <div class="demo-nav" id="demo-nav">
@@ -1814,7 +1822,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v108'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v109'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1878,7 +1886,7 @@
       { key:'formsview', label:'양식 조회' },
     ]},
     { group:'감사 · 이력', items:[
-      { key:'auditlog', label:'변경이력', adminOnly:true },
+      { key:'auditlog', label:'변경이력', auditOnly:true },
     ]},
   ];
   let CURRENT_LOGIN_USER = null; // {name, roles: [], position} — 데모: 로그인 사용자 전환용
@@ -1887,7 +1895,7 @@
       const active = sb.dataset.active;
       let html = `<div class="side-brand"><img class="side-logo" src="data:image/png;base64,${LOGO_B64}" alt="대운이엔씨 로고"></div>`;
       SIDEBAR_ITEMS.forEach(group=>{
-        const visibleItems = group.items.filter(it => !it.adminOnly || isSystemAdmin());
+        const visibleItems = group.items.filter(it => !it.auditOnly || canViewAuditLog());
         if(!visibleItems.length) return;
         html += `<div class="side-group">${group.group}</div>`;
         visibleItems.forEach(it=>{
@@ -2244,6 +2252,7 @@
     const tbody = table.tBodies[0] || table;
     Array.from(tbody.children).slice(1).forEach(r=>r.remove());
     if(rowsHtml) tbody.insertAdjacentHTML('beforeend', rowsHtml);
+    if(typeof applyWritePermissions === 'function') applyWritePermissions(tbody); // v108: 대표 등 조회전용 사용자는 새로 그려진 행도 바로 잠금
   }
   let _usersLoading = false;
   async function loadUsersFromSupabase(){
@@ -3113,8 +3122,8 @@
   const AUDITLOG_ROW_CAP = 1000; // 전체기간 조회 시에도 화면이 느려지지 않도록 두는 안전장치(최대 표시 건수)
   async function loadAuditLogFromSupabase(){
     const content = document.getElementById('auditlog-content');
-    if(!isSystemAdmin()){
-      if(content) content.innerHTML = '<div style="padding:24px;color:var(--slate);font-size:13px;">권한이 없습니다. (시스템관리자만 조회할 수 있습니다)</div>';
+    if(!canViewAuditLog()){
+      if(content) content.innerHTML = '<div style="padding:24px;color:var(--slate);font-size:13px;">권한이 없습니다. (시스템관리자·대표만 조회할 수 있습니다)</div>';
       return false;
     }
     if(content && !content.querySelector('.grid-wrap')){
@@ -4032,6 +4041,51 @@
     if(!CURRENT_LOGIN_USER) return true; // 데모 기본값(로그인 전): 전체 허용
     return (CURRENT_LOGIN_USER.roles||[]).includes('시스템관리자');
   }
+  // v108: 대표는 경영현황을 조회·감사하는 역할이므로 등록/수정/삭제 등 데이터 변경 권한은
+  // 시스템관리자만 갖습니다(대표는 조회 전용). 변경이력(감사로그)은 예외적으로 대표도
+  // 열람할 수 있게 허용합니다(감시·감독 목적의 "조회" 기능이라 수정 권한과는 별개입니다).
+  function canWrite(){ return isSystemAdmin(); }
+  function canViewAuditLog(){
+    if(isSystemAdmin()) return true;
+    return !!(CURRENT_LOGIN_USER && (CURRENT_LOGIN_USER.roles||[]).includes('대표'));
+  }
+  // 새로 그려진(또는 새로 열린 모달 안의) 입력요소들을 현재 로그인한 사용자의 쓰기 권한에 맞춰
+  // 잠그거나 풀어줍니다. select는 원래부터 disabled였던 셀(예: 자동계산되는 영업담당)의
+  // 상태를 data-base-disabled에 기억해뒀다가, 쓰기 권한이 있을 때 그 상태로 정확히 복원합니다.
+  function applyWritePermissions(scopeEl){
+    scopeEl = scopeEl || document;
+    const allowed = canWrite();
+    scopeEl.querySelectorAll('[contenteditable]').forEach(el=>{
+      el.setAttribute('contenteditable', allowed ? 'true' : 'false');
+    });
+    scopeEl.querySelectorAll('select.cell-select').forEach(el=>{
+      if(el.dataset.baseDisabled === undefined) el.dataset.baseDisabled = el.disabled ? '1' : '0';
+      el.disabled = allowed ? (el.dataset.baseDisabled === '1') : true;
+    });
+  }
+  // 모달 안(#modal-content)에는 체크박스·입력창·textarea(역할선택, PIN, 메모 등)가 있어
+  // 위의 공용 잠금에 더해 이것들도 함께 잠급니다. 상단 필터바의 검색어/날짜 입력 등은
+  // 모달 밖에 있어 영향받지 않고 조회 전용 사용자도 계속 사용할 수 있습니다.
+  function applyModalWritePermissions(scopeEl){
+    applyWritePermissions(scopeEl);
+    const allowed = canWrite();
+    scopeEl.querySelectorAll('input, textarea').forEach(el=>{
+      if(el.dataset.baseDisabled === undefined) el.dataset.baseDisabled = el.disabled ? '1' : '0';
+      el.disabled = allowed ? (el.dataset.baseDisabled === '1') : true;
+    });
+  }
+  function refreshWritePermissionUI(){
+    document.body.classList.toggle('read-only-mode', !canWrite());
+    applyWritePermissions(document);
+  }
+  // 모달(#modal-content)은 화면마다 다른 함수가 직접 innerHTML을 채워 넣으므로, 각 함수를
+  // 일일이 수정하는 대신 내용이 바뀔 때마다 자동으로 잠금 상태를 적용합니다.
+  (function watchModalContentForWriteLock(){
+    const target = document.getElementById('modal-content');
+    if(!target || typeof MutationObserver === 'undefined') return;
+    const observer = new MutationObserver(()=> applyModalWritePermissions(target));
+    observer.observe(target, { childList:true, subtree:true });
+  })();
   // context별로 연관된 프로젝트/이력/첨부파일 개수를 세어 { total, breakdown(문구 배열) }로 반환합니다.
   async function countRelatedRecords(context, key){
     if(!sb || !key) return { total:0, breakdown:[] };
@@ -4545,6 +4599,8 @@
     // 상단 화면전환 바로가기는 시스템관리자 로그인일 때만 보여줍니다.
     const dn = document.getElementById('demo-nav');
     if(dn) dn.classList.toggle('show', (matched.roles||[]).includes('시스템관리자'));
+    // v108: 대표는 조회 전용(등록/수정/삭제 불가) — 시스템관리자만 데이터를 변경할 수 있습니다.
+    refreshWritePermissionUI();
   }
   function isFullAccessUser(){
     if(!CURRENT_LOGIN_USER) return true; // 데모 기본값: 전체 접근
