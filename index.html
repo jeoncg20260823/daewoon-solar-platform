@@ -52,15 +52,19 @@
   .display{font-family:'Space Grotesk','Noto Sans KR',sans-serif;}
   .mono{font-family:'IBM Plex Mono',monospace;}
 
-  /* ---- Demo nav (not part of real product) ---- */
+  /* v107: 로그인 시 역할에 따라 자동으로 대시보드/모바일 화면으로 이동합니다.
+     상단 화면전환 내비게이션은 시스템관리자 로그인일 때만 보이도록 숨겨두고,
+     일반 화면 우하단에는 항상 작은 버전 표시만 남겨둡니다. */
+  #version-badge{ position:fixed; bottom:6px; right:8px; font-size:10px; color:rgba(0,0,0,0.35); z-index:5; pointer-events:none; background:rgba(255,255,255,0.6); padding:1px 6px; border-radius:999px; }
   .demo-nav{
-    display:flex;
+    display:none;
     gap:6px;
     padding:10px 14px;
     background:var(--navy);
     flex-wrap:wrap;
     flex-shrink:0;
   }
+  .demo-nav.show{ display:flex; }
   .demo-nav button{
     font-family:inherit;
     font-size:12.5px;
@@ -189,6 +193,10 @@
   .phone-top-name{ font-size:16px; font-weight:700; }
   .phone-body{ padding:16px; flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
   .field-section-label{ font-size:11.5px; color:var(--slate); font-weight:700; letter-spacing:.05em; margin:4px 0 10px; }
+  /* v107: 모바일 "내 프로젝트" 목록 상단의 사전/진행 전환 탭 */
+  .mobile-list-tabs{ display:flex; gap:8px; margin-bottom:14px; }
+  .mobile-list-tab{ flex:1; font-family:inherit; font-size:12.5px; font-weight:700; padding:9px 6px; border-radius:10px; border:1px solid var(--grid-line); background:#fff; color:var(--slate); cursor:pointer; transition:all .15s ease; }
+  .mobile-list-tab.active{ background:var(--navy); border-color:var(--navy); color:#fff; }
   .job-card{ background:#fff; border:1px solid var(--grid-line); border-radius:12px; padding:14px; margin-bottom:10px; }
   .job-card-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
   .job-card-customer{ font-size:13px; font-weight:700; }
@@ -205,7 +213,7 @@
     .phone-wrap{ padding:0; }
     .phone{ width:100%; border-radius:0; padding:0; box-shadow:none; }
     .phone-screen{ border-radius:0; min-height:100vh; }
-    .demo-nav{ position:sticky; top:0; z-index:10; }
+    .demo-nav.show{ position:sticky; top:0; z-index:10; }
   }
 
   /* ==================== 4. CLOSING SCREEN ==================== */
@@ -371,8 +379,7 @@
   .mobile-topbar{ display:none; }
   @media (max-width:600px){
     div[style*="display:flex;width:100%"]{ display:block !important; }
-    .demo-nav button[onclick*="openMobilePreview"]{ display:none; }
-    
+
     .sidebar{ position:fixed; top:0; left:0; height:100vh; height:100dvh; min-height:0; z-index:50; transform:translateX(-100%); transition:transform .25s ease; box-shadow:0 0 30px rgba(0,0,0,0.3); overflow-y:auto; padding-bottom:40px; box-sizing:border-box; }
     .sidebar.mobile-open{ transform:translateX(0); }
     .main{ width:100%; }
@@ -399,13 +406,15 @@
 </head>
 <body>
 
-<div class="demo-nav">
+<div id="version-badge">v108</div>
+
+<!-- v107: 시스템관리자 로그인일 때만 보이는 화면전환용 바로가기 바입니다(일반 직원 화면에는 표시되지 않습니다). -->
+<div class="demo-nav" id="demo-nav">
   <button class="active" data-target="welcome" data-navpos="1">① 환영화면 (로그인)</button>
   <button data-target="bizdash" data-navpos="2">② 사업현황 대시보드</button>
   <button data-target="mobile" data-navpos="4">③ 현장 모바일</button>
   <button data-target="closing" data-navpos="5">④ 종료 인사화면</button>
-  <button onclick="openMobilePreview()" style="border-color:var(--amber);color:var(--amber);">📱 모바일 화면 미리보기</button>
-  <span id="version-label" style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:11px;padding:6px 10px;">v53</span>
+  <button onclick="openMobilePreview()" style="border-color:var(--amber);color:var(--amber);margin-left:auto;">📱 모바일 화면 미리보기</button>
 </div>
 
 <!-- ============ 1. WELCOME ============ -->
@@ -725,6 +734,10 @@
             <div class="phone-top-name" id="mobile-field-topname">김영훈 담당자님</div>
           </div>
           <div class="phone-body" id="mobile-tab-projects">
+            <div class="mobile-list-tabs">
+              <button type="button" class="mobile-list-tab active" data-kind="pre" onclick="mobileListSwitch('pre')">사전프로젝트 <span id="mobile-list-count-pre">(0건)</span></button>
+              <button type="button" class="mobile-list-tab" data-kind="prog" onclick="mobileListSwitch('prog')">진행프로젝트 <span id="mobile-list-count-prog">(0건)</span></button>
+            </div>
             <div id="mobile-project-list-content">
               <div style="padding:20px 4px;color:var(--slate);font-size:12px;text-align:center;">불러오는 중...</div>
             </div>
@@ -1801,7 +1814,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v107'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v108'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -1842,7 +1855,7 @@
       });
     });
   })();
-  { const vl = document.getElementById('version-label'); if(vl) vl.textContent = CURRENT_VERSION; }
+  { const vl = document.getElementById('version-badge'); if(vl) vl.textContent = CURRENT_VERSION; }
   // ---- shared sidebar component ----
   const SIDEBAR_ITEMS = [
     { group:'경영 현황', items:[
@@ -1917,6 +1930,10 @@
     document.querySelectorAll('.demo-nav button').forEach(b=>b.classList.remove('active'));
     const navBtn = document.querySelector('.demo-nav button[data-target="'+target+'"]');
     if(navBtn) navBtn.classList.add('active');
+    if(target === 'welcome'){
+      const dn = document.getElementById('demo-nav');
+      if(dn) dn.classList.remove('show'); // 로그아웃 후에는 다음 로그인 전까지 다시 숨김
+    }
     document.querySelectorAll('.side-item[data-key]').forEach(el=>{
       el.classList.toggle('active', el.dataset.key === target);
     });
@@ -4521,7 +4538,13 @@
     CURRENT_LOGIN_USER = matched;
     recordLoginActivity(matched.name, matched.email); // 백그라운드로 최근로그인/접속이력/기기 등록
     renderSidebars();
-    go('bizdash');
+    // v107: 시스템관리자/대표는 사업현황 대시보드로, 그 외 모든 직원(본인 담당 프로젝트만 관리하면
+    // 되는 현장직원)은 현장 모바일 화면으로 로그인 직후 자동 이동합니다.
+    const isTopMgmt = (matched.roles||[]).includes('시스템관리자') || (matched.roles||[]).includes('대표');
+    go(isTopMgmt ? 'bizdash' : 'mobile');
+    // 상단 화면전환 바로가기는 시스템관리자 로그인일 때만 보여줍니다.
+    const dn = document.getElementById('demo-nav');
+    if(dn) dn.classList.toggle('show', (matched.roles||[]).includes('시스템관리자'));
   }
   function isFullAccessUser(){
     if(!CURRENT_LOGIN_USER) return true; // 데모 기본값: 전체 접근
@@ -5594,6 +5617,24 @@
   }
   // v106: 모바일 "내 프로젝트" 목록을 더 이상 고정된 예시 카드로 보여주지 않고,
   // 사전/진행 프로젝트관리 화면과 동일한 실제 데이터(PRE_PROJECTS/PROG_PROJECTS)로 렌더링합니다.
+  // v107: (1) 사전/진행 프로젝트를 상단 탭으로 나눠 하나씩만 보여주고, (2) 시스템관리자·대표가
+  // 아닌 일반 직원은 본인이 담당자로 지정된 프로젝트만 보이도록 필터링합니다.
+  let MOBILE_LIST_KIND = 'pre';
+  function isMobileAssignedProject(kind, id, proj){
+    if(isFullAccessUser()) return true; // 시스템관리자/대표는 전체를 봅니다
+    const name = CURRENT_LOGIN_USER ? CURRENT_LOGIN_USER.name : '';
+    if(!name) return true; // 데모 기본값(로그인 전 미리보기): 전체 표시
+    if(kind === 'pre' && proj.manager === name) return true; // 영업담당으로 지정된 경우
+    const steps = PROJECT_STEP_DATA[kind + '_' + id] || [];
+    return steps.some(s => s.manager === name); // 설계/시공/행정/실사 등 단계 담당으로 지정된 경우
+  }
+  function mobileListSwitch(kind){
+    MOBILE_LIST_KIND = kind;
+    document.querySelectorAll('.mobile-list-tab').forEach(b=>{
+      b.classList.toggle('active', b.dataset.kind === kind);
+    });
+    renderMobileProjectList();
+  }
   function renderMobileProjectList(){
     const el = document.getElementById('mobile-project-list-content');
     if(!el) return;
@@ -5644,14 +5685,19 @@
         </div>
       </div>`;
     };
-    const preActive = PRE_PROJECTS.filter(p => computeProjectStatus('pre', p.id, getStepData('pre', p.id)) === '진행중');
-    const progActive = PROG_PROJECTS.filter(p => computeProjectStatus('prog', p.id, getStepData('prog', p.id)) === '진행중');
-    el.innerHTML = `
-      <div class="field-section-label">사전 프로젝트 · ${preActive.length}건</div>
-      ${preActive.length ? preActive.map(preCardHtml).join('') : '<div style="padding:10px 4px;color:var(--slate);font-size:11.5px;">진행 중인 사전 프로젝트가 없습니다.</div>'}
-      <div class="field-section-label" style="margin-top:6px;">진행 프로젝트 · ${progActive.length}건</div>
-      ${progActive.length ? progActive.map(progCardHtml).join('') : '<div style="padding:10px 4px;color:var(--slate);font-size:11.5px;">진행 중인 프로젝트가 없습니다.</div>'}
-    `;
+    const preActive = PRE_PROJECTS.filter(p => computeProjectStatus('pre', p.id, getStepData('pre', p.id)) === '진행중' && isMobileAssignedProject('pre', p.id, p));
+    const progActive = PROG_PROJECTS.filter(p => computeProjectStatus('prog', p.id, getStepData('prog', p.id)) === '진행중' && isMobileAssignedProject('prog', p.id, p));
+
+    const countPre = document.getElementById('mobile-list-count-pre');
+    const countProg = document.getElementById('mobile-list-count-prog');
+    if(countPre) countPre.textContent = `(${preActive.length}건)`;
+    if(countProg) countProg.textContent = `(${progActive.length}건)`;
+
+    if(MOBILE_LIST_KIND === 'prog'){
+      el.innerHTML = progActive.length ? progActive.map(progCardHtml).join('') : '<div style="padding:20px 4px;color:var(--slate);font-size:11.5px;text-align:center;">담당하고 계신 진행 프로젝트가 없습니다.</div>';
+    } else {
+      el.innerHTML = preActive.length ? preActive.map(preCardHtml).join('') : '<div style="padding:20px 4px;color:var(--slate);font-size:11.5px;text-align:center;">담당하고 계신 사전 프로젝트가 없습니다.</div>';
+    }
   }
   // v107: 상단의 "①로그인/②내프로젝트/③종료" 데모 전환 버튼은 실제 현장직원 화면에는
   // 필요 없는 테스트용 버튼이라 제거했습니다. 실제 흐름은 로그인 → 목록 → (프로필에서)로그아웃 → 종료 입니다.
