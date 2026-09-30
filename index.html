@@ -177,13 +177,17 @@
   .progress-fill{ height:100%; background:var(--amber); border-radius:99px; }
 
   /* ==================== 3. MOBILE FIELD SCREEN ==================== */
-  .phone-wrap{ display:flex; justify-content:center; padding:40px 20px; background:var(--paper); min-height:640px; }
-  .phone{ width:340px; background:var(--navy); border-radius:34px; padding:12px; box-shadow:0 20px 50px rgba(18,138,87,0.25); }
-  .phone-screen{ background:var(--paper); border-radius:24px; overflow:hidden; min-height:600px; display:flex; flex-direction:column; }
-  .phone-top{ background:var(--navy); color:#fff; padding:16px 18px 20px; }
+  /* v107: 화면 높이보다 내용이 길어지면(프로젝트가 많거나 공정 단계가 길 때) 그동안은
+     그냥 화면 아래로 잘려서 스크롤이 안 되는 문제가 있었습니다. 상단 인사말/하단 탭 메뉴는
+     고정하고, 그 사이 본문(.phone-body)만 세로로 스크롤되도록 높이 체계를 다시 잡았습니다. */
+  .phone-wrap{ display:flex; justify-content:center; align-items:stretch; padding:40px 20px; background:var(--paper); min-height:640px; height:100%; }
+  .phone{ width:340px; background:var(--navy); border-radius:34px; padding:12px; box-shadow:0 20px 50px rgba(18,138,87,0.25); display:flex; flex-direction:column; height:100%; }
+  .phone-screen{ background:var(--paper); border-radius:24px; overflow:hidden; min-height:600px; flex:1; min-height:0; display:flex; flex-direction:column; }
+  .mobile-substate{ min-height:0; }
+  .phone-top{ background:var(--navy); color:#fff; padding:16px 18px 20px; flex-shrink:0; }
   .phone-top-greet{ font-size:11.5px; color:rgba(255,255,255,0.55); margin-bottom:3px; }
   .phone-top-name{ font-size:16px; font-weight:700; }
-  .phone-body{ padding:16px; flex:1; }
+  .phone-body{ padding:16px; flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
   .field-section-label{ font-size:11.5px; color:var(--slate); font-weight:700; letter-spacing:.05em; margin:4px 0 10px; }
   .job-card{ background:#fff; border:1px solid var(--grid-line); border-radius:12px; padding:14px; margin-bottom:10px; }
   .job-card-top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; }
@@ -192,7 +196,7 @@
   .job-card-step{ font-size:12px; color:var(--navy-3); margin-bottom:10px; }
   .job-card-foot{ display:flex; align-items:center; justify-content:space-between; }
   .btn-mini{ font-size:11.5px; padding:7px 12px; border-radius:7px; border:none; background:var(--navy); color:#fff; font-weight:600; cursor:pointer; }
-  .phone-nav{ display:flex; border-top:1px solid var(--grid-line); background:#fff; }
+  .phone-nav{ display:flex; border-top:1px solid var(--grid-line); background:#fff; flex-shrink:0; }
   .phone-nav div{ flex:1; text-align:center; padding:10px 0 12px; font-size:10.5px; color:var(--slate); cursor:pointer; }
   .phone-nav div.active{ color:var(--amber-dark); font-weight:700; }
 
@@ -273,7 +277,6 @@
   .btn-save{ font-size:12.5px; padding:8px 16px; border-radius:7px; border:none; background:var(--amber); color:var(--navy); font-weight:700; cursor:pointer; font-family:inherit; margin-left:8px; }
   .btn-save:disabled{ background:#E5E7EB; color:#9CA3AF; cursor:not-allowed; }
   .toolbar-actions{ display:flex; align-items:center; }
-  .mobile-toggle button.active{ background:var(--navy) !important; color:#fff !important; border-color:var(--navy) !important; font-weight:700; }
   .cell-invalid{ outline:2px solid var(--danger) !important; outline-offset:-2px; background:#FCE9E9 !important; }
   .save-msg{ font-size:11.5px; margin-left:10px; }
   .save-msg.error{ color:var(--danger); font-weight:600; }
@@ -703,12 +706,6 @@
 <!-- ============ 3. MOBILE FIELD ============ -->
 <div class="screen" id="screen-mobile">
   <div class="phone-wrap">
-    <div style="width:100%;max-width:340px;">
-      <div class="mobile-toggle" style="display:flex;gap:6px;margin-bottom:10px;justify-content:center;">
-        <button data-state="login" onclick="mobileGo('login')" style="font-size:11px;padding:6px 12px;border-radius:999px;border:1px solid var(--grid-line);background:#fff;cursor:pointer;">① 로그인</button>
-        <button data-state="list" onclick="mobileGo('list')" class="active" style="font-size:11px;padding:6px 12px;border-radius:999px;border:1px solid var(--grid-line);background:#fff;cursor:pointer;">② 내 프로젝트</button>
-        <button data-state="closing" onclick="mobileGo('closing')" style="font-size:11px;padding:6px 12px;border-radius:999px;border:1px solid var(--grid-line);background:#fff;cursor:pointer;">③ 종료</button>
-      </div>
     <div class="phone">
       <div class="phone-screen">
 
@@ -782,7 +779,6 @@
         </div>
 
       </div>
-    </div>
     </div>
   </div>
 </div>
@@ -1805,7 +1801,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v106'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v107'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -5657,14 +5653,13 @@
       ${progActive.length ? progActive.map(progCardHtml).join('') : '<div style="padding:10px 4px;color:var(--slate);font-size:11.5px;">진행 중인 프로젝트가 없습니다.</div>'}
     `;
   }
+  // v107: 상단의 "①로그인/②내프로젝트/③종료" 데모 전환 버튼은 실제 현장직원 화면에는
+  // 필요 없는 테스트용 버튼이라 제거했습니다. 실제 흐름은 로그인 → 목록 → (프로필에서)로그아웃 → 종료 입니다.
   function mobileGo(state){
     if(state === 'list'){ syncFieldMobileUser(); renderMobileProjectList(); }
     document.querySelectorAll('.mobile-substate').forEach(s=>s.style.display='none');
     const el = document.getElementById('mobile-'+state);
     if(el) el.style.display = 'flex';
-    document.querySelectorAll('.mobile-toggle button').forEach(b=>b.classList.remove('active'));
-    const btn = document.querySelector('.mobile-toggle button[data-state="'+state+'"]');
-    if(btn) btn.classList.add('active');
   }
   function mobileBodyGo(tab){
     document.querySelectorAll('#mobile-list .phone-body').forEach(el=>el.style.display='none');
