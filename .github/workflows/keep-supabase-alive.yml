@@ -1,0 +1,19 @@
+name: Keep Supabase Alive
+ 
+# 매일 Supabase DB에 가벼운 조회 요청을 한 번 보내서,
+# 무료 플랜의 "7일 미사용 자동 일시정지"에 걸리지 않도록 합니다.
+on:
+  schedule:
+    - cron: '7 19 * * *'   # 매일 UTC 19:07 = 한국시간(KST) 새벽 4시 7분
+  workflow_dispatch: {}     # Actions 탭에서 수동으로도 바로 테스트 실행 가능
+ 
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -sf -H "apikey: sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-" \
+               -H "Authorization: Bearer sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-" \
+               "https://sedaxifdcckylcrtcabj.supabase.co/rest/v1/customers?select=id&limit=1"
+ 
