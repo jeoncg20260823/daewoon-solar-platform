@@ -413,7 +413,7 @@
 </head>
 <body>
 
-<div id="version-badge">v109</div>
+<div id="version-badge">v110</div>
 <div id="read-only-banner">🔒 조회 전용 모드입니다 — 등록·수정·삭제는 시스템관리자만 가능합니다.</div>
 
 <!-- v107: 시스템관리자 로그인일 때만 보이는 화면전환용 바로가기 바입니다(일반 직원 화면에는 표시되지 않습니다). -->
@@ -437,6 +437,7 @@
       <input type="text" id="login-email" placeholder="name@daewoonenc.com">
       <label>비밀번호</label>
       <input type="password" id="login-password" placeholder="••••••••">
+      <div id="login-hold-notice" style="font-size:12px;color:var(--slate);margin-bottom:10px;text-align:center;">※ 시스템 사용이 일시 보류 중입니다. (관리자 전용)</div>
       <div id="login-error" style="color:var(--danger);font-size:12px;margin-bottom:10px;display:none;">이메일 또는 비밀번호가 일치하지 않습니다.</div>
       <button class="btn-primary" onclick="doLogin()">로그인</button>
     </div>
@@ -1822,7 +1823,7 @@
   const SUPABASE_URL = 'https://sedaxifdcckylcrtcabj.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_gvXRTf9jdD9wxhz1Tc4jCg_uoztq5w-';
   const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-  const CURRENT_VERSION = 'v109'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
+  const CURRENT_VERSION = 'v110'; // 새 버전 배포 시 이 값도 함께 올려주세요 (하단 버전 표시와 새버전 알림에 사용)
   async function checkAppVersion(){
     if(!sb) return;
     try {
@@ -4535,8 +4536,16 @@
       }
     } catch(e){ console.warn('기기 등록 실패', e); }
   }
+  // v110: 시스템 사용 보류 기간 동안에는 아래 목록의 이메일만 로그인할 수 있습니다.
+  // 재개할 때는 이 목록을 빈 배열 [] 로 바꾸면 모든 직원이 다시 로그인할 수 있습니다.
+  const LOGIN_ALLOWLIST = ['jeoncg@gmail.com'];
   async function doLogin(){
     const email = (document.getElementById('login-email').value || '').trim().toLowerCase();
+    if(LOGIN_ALLOWLIST.length && !LOGIN_ALLOWLIST.includes(email)){
+      const errEl0 = document.getElementById('login-error');
+      if(errEl0){ errEl0.textContent = '현재 시스템은 사용이 일시 보류되어 있습니다. 재개 시 안내드리겠습니다.'; errEl0.style.display = 'block'; }
+      return;
+    }
     const pw = (document.getElementById('login-password').value || '').trim();
     const errEl = document.getElementById('login-error');
 
@@ -4585,7 +4594,7 @@
     }
 
     if(!matched){
-      if(errEl) errEl.style.display = 'block';
+      if(errEl){ errEl.textContent = '이메일 또는 비밀번호가 일치하지 않습니다.'; errEl.style.display = 'block'; }
       return;
     }
     if(errEl) errEl.style.display = 'none';
